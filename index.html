@@ -38,9 +38,6 @@
   --r:16px; --r2:10px; --r3:8px;
   --ease:cubic-bezier(.4,0,.2,1);
   --t:all 0.2s var(--ease);
-  /* Auth screen vars (were missing — causing invisible text) */
-  --teal: #6BAF8A;
-  --ink: #F0EDE6;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
@@ -105,18 +102,9 @@ body{font-family:'Cabinet Grotesk',system-ui,sans-serif;background:var(--bg);col
 /* ══════════════════════════════════
    CUSTOM CURSOR — dot only, no ring
 ══════════════════════════════════ */
-body{cursor:none}
-#cur{
-  position:fixed;width:7px;height:7px;border-radius:50%;
-  background:var(--gold);pointer-events:none;z-index:99998;
-  transform:translate(-50%,-50%);
-  box-shadow:0 0 10px var(--gold-glow);
-  transition:width 0.18s,height 0.18s,background 0.18s;
-  will-change:left,top;
-}
-#cur.big{width:14px;height:14px;background:rgba(232,168,56,0.5)}
-#cur.click{width:18px;height:18px;background:rgba(232,168,56,0.3)}
-@media(pointer:coarse){#cur{display:none}body{cursor:default}}
+body{cursor:auto}
+#cur{display:none}
+@media(pointer:coarse){#cur{display:none}body{cursor:auto}}
 
 /* ══════════════════════════════════
    GRAIN + AMBIENT
@@ -456,45 +444,25 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   .paper-box{padding:20px 14px}
 }
 </style>
-<script>
-(function() {
-  var cdns = [
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
-    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
-  ];
-  var i = 0;
-  function load() {
-    if (i >= cdns.length) { document.getElementById('cdnErr').style.display='flex'; return; }
-    var s = document.createElement('script'); s.src = cdns[i++]; s.onerror = load; document.head.appendChild(s);
-  }
-  load();
-})();
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<div id="cdnErr" style="display:none;position:fixed;inset:0;z-index:999999;background:#080f0b;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px;text-align:center">
-  <div style="font-size:2.5rem">⚠️</div>
-  <div style="color:#F0EDE6;font-size:1.1rem;font-weight:700;font-family:system-ui,sans-serif">Could not load Questrix</div>
-  <div style="color:#8fa897;font-size:13px;max-width:300px;line-height:1.7;font-family:system-ui,sans-serif">A required script failed to load. Try turning off your ad blocker, switching to Chrome, or using a different network.</div>
-  <button onclick="location.reload()" style="margin-top:8px;padding:12px 28px;background:#6BAF8A;border:none;border-radius:10px;color:#000;font-weight:800;font-size:14px;cursor:pointer">🔄 Retry</button>
-</div>
-<div id="authScreen" data-mode="login" style="display:flex;position:fixed;inset:0;z-index:99998;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch">
-  <div style="font-family:'Instrument Serif',serif;font-size:2.1rem;font-weight:700;font-style:italic;color:var(--text)">Ques<span style="color:var(--gold);font-style:normal">trix</span></div>
+<div id="authScreen" data-mode="login" style="display:flex;position:fixed;inset:0;z-index:99998;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;padding:20px">
+  <div style="font-family:'Libre Baskerville',serif;font-size:2.1rem;font-weight:700;font-style:italic;color:var(--ink)">Ques<span style="color:var(--teal);font-style:normal">trix</span></div>
   <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:8px;margin-bottom:32px">Smart Question Paper Maker</div>
   <div style="background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:26px 28px;width:min(370px,94vw)">
     <div style="display:flex;border-radius:9px;overflow:hidden;border:1px solid var(--b2);margin-bottom:20px">
-      <button id="authBtnLogin" onclick="setAuthMode('login')" style="flex:1;padding:9px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;background:var(--sage);color:#000">Sign In</button>
+      <button id="authBtnLogin" onclick="setAuthMode('login')" style="flex:1;padding:9px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;background:var(--teal);color:#fff">Sign In</button>
       <button id="authBtnSignup" onclick="setAuthMode('signup')" style="flex:1;padding:9px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;background:transparent;color:var(--muted2)">Create Account</button>
     </div>
-    <button onclick="signInGoogle()" style="width:100%;padding:12px;border:1.5px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--text);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;border-radius:10px;transition:background 0.2s">Continue with Google</button>
+    <button onclick="signInGoogle()" style="width:100%;padding:12px;border:1.5px solid var(--b2);border-radius:10px;background:var(--bg);color:var(--ink);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px">Continue with Google</button>
     <div style="display:flex;flex-direction:column;gap:9px">
-      <input id="authEmail" type="email" placeholder="your@email.com" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--s2);color:var(--text);font-family:inherit;font-size:14px;outline:none;width:100%"/>
-      <input id="authPass" type="password" placeholder="password" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--s2);color:var(--text);font-family:inherit;font-size:14px;outline:none;width:100%" onkeydown="if(event.key==='Enter')signInEmail()"/>
-      <button id="authSubmit" onclick="signInEmail()" style="padding:13px;border:none;border-radius:10px;background:var(--sage);color:#000;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;transition:background 0.2s">Sign In</button>
+      <input id="authEmail" type="email" placeholder="your@email.com" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;outline:none;width:100%"/>
+      <input id="authPass" type="password" placeholder="password" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;outline:none;width:100%" onkeydown="if(event.key==='Enter')signInEmail()"/>
+      <button id="authSubmit" onclick="signInEmail()" style="padding:13px;border:none;border-radius:10px;background:var(--teal);color:#fff;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer">Sign In</button>
     </div>
-    <div id="authMsg" style="display:none;margin-top:12px;font-size:12px;color:var(--terra);text-align:center;padding:8px 12px;background:var(--s2);border-radius:8px;border:1px solid var(--b2)"></div>
   </div>
-  <button id="pwaInstallBtn" style="display:none;margin-top:16px;padding:11px 22px;border:1.5px solid var(--sage);border-radius:10px;background:transparent;color:var(--sage);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;align-items:center;gap:8px">📲 Install App on this Device</button>
+  <button id="pwaInstallBtn" style="display:none;margin-top:16px;padding:11px 22px;border:1.5px solid var(--teal);border-radius:10px;background:transparent;color:var(--teal);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;align-items:center;gap:8px">📲 Install App on this Device</button>
   <div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">Your papers are stored privately. Only you can see your data.</div>
 </div>
 <div id="mainApp">
@@ -939,8 +907,8 @@ const SUPA_URL = 'https://wqspitybvtcqzolzjlhd.supabase.co';
 
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indxc3BpdHlidnRjcXpvbHpqbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MjM2NTUsImV4cCI6MjA4ODA5OTY1NX0.8oQa-OvPMM6_CCMLQN6jSIkAk9LaHoCznMV0e0eueps';
 
-// db is initialized after CDN loads asynchronously (see window.onload wait loop)
-let db = null;
+const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
 let currentUser = null;
 
 // ── QT CONFIG ──
@@ -1003,62 +971,31 @@ window.addEventListener('beforeinstallprompt',e=>{
   if(btn){btn.style.display='flex';btn.onclick=async()=>{deferredPrompt.prompt();const{outcome}=await deferredPrompt.userChoice;if(outcome==='accepted')btn.style.display='none';deferredPrompt=null;};}
 });
 window.onload = async () => {
+  setTimeout(removeSplash, 2800);
   buildQTGrid(); buildTemplates(); buildRoadmap();
   loadPrefs(); syncDiff(); initCursor(); registerSW();
-
-  // Wait for Supabase CDN to finish loading (tries fallback CDNs, up to 8s)
-  let waited = 0;
-  while (!window.supabase && waited < 8000) {
-    await new Promise(r => setTimeout(r, 150));
-    waited += 150;
-  }
-  if (!window.supabase) {
-    removeSplash();
-    document.getElementById('cdnErr').style.display = 'flex';
-    return;
-  }
-  db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-
-  // Safety net: ALWAYS remove splash after 3.5s — never leave user stuck (critical for mobile/Safari)
-  const splashKill = setTimeout(function() {
-    removeSplash();
-    if (!currentUser) {
-      document.getElementById('authScreen').style.display = 'flex';
-      document.getElementById('mainApp').style.display = 'none';
-    }
-  }, 3500);
-
-  function showAuth() {
-    clearTimeout(splashKill);
-    removeSplash();
-    document.getElementById('authScreen').style.display = 'flex';
-    document.getElementById('mainApp').style.display = 'none';
-  }
-  function showApp() {
-    clearTimeout(splashKill);
-    removeSplash();
-    document.getElementById('authScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    loadHistory(); updateStats(); initKeys(); updateAccountUI();
-  }
-
-  // Auth state listener — handles Google OAuth redirect callbacks on ALL browsers
-  db.auth.onAuthStateChange(function(event, session) {
-    currentUser = session ? session.user : null;
-    if (currentUser) showApp(); else showAuth();
-  });
-
-  // Fast path: check existing session (4s timeout for slow mobile connections)
   try {
-    const r = await Promise.race([
-      db.auth.getSession(),
-      new Promise(function(res) { setTimeout(function() { res({data:{session:null}}); }, 4000); })
-    ]);
-    currentUser = (r && r.data && r.data.session) ? r.data.session.user : null;
-    if (currentUser) showApp(); else showAuth();
-  } catch(e) {
-    currentUser = null;
-    showAuth();
+    const r = await Promise.race([db.auth.getSession(), new Promise(res=>setTimeout(()=>res({data:{session:null}}),5000))]);
+    currentUser = r.data.session?.user || null;
+  } catch(e){ currentUser=null; }
+  db.auth.onAuthStateChange((event,session)=>{
+    currentUser=session?.user||null;
+    if(currentUser){
+      document.getElementById('authScreen').style.display='none';
+      document.getElementById('mainApp').style.display='block';
+      loadHistory();updateStats();initKeys();
+    } else {
+      document.getElementById('authScreen').style.display='flex';
+      document.getElementById('mainApp').style.display='none';
+    }
+  });
+  if(!currentUser){
+    document.getElementById('authScreen').style.display='flex';
+    document.getElementById('mainApp').style.display='none';
+  } else {
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('mainApp').style.display='block';
+    loadHistory();updateStats();initKeys();
   }
 };
 
@@ -1318,7 +1255,8 @@ async function dlPDF(){
 }
 function dlTXT(){if(!lastGenText){showToast('No paper','err');return;}const b=new Blob([lastGenText],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(v('examName')||'Paper').replace(/\s+/g,'_')+'.txt';a.click();URL.revokeObjectURL(a.href);showToast('TXT downloaded!','ok');}
 function copyTxt(){if(!lastGenText)return;navigator.clipboard.writeText(lastGenText).then(()=>showToast('Copied!','ok'));}
-function printPaper(){if(!lastGenText)return;const w=window.open('','_blank');w.document.write(`<html><head><title>Question Paper</title><style>body{font-family:Georgia,serif;font-size:13px;line-height:1.9;padding:30px 48px;white-space:pre-wrap;color:#111}@media print{body{padding:18px 28px}}</style><script>
+function printPaper(){if(!lastGenText)return;const w=window.open('','_blank');w.document.write(`<html><head><title>Question Paper</title><style>body{font-family:Georgia,serif;font-size:13px;line-height:1.9;padding:30px 48px;white-space:pre-wrap;color:#111}@media print{body{padding:18px 28px}}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head></div>
 </body>${lastGenText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),400);}
 
 // ── DB ──
@@ -1439,54 +1377,32 @@ function importData(){const inp=document.createElement('input');inp.type='file';
 let tTimer;
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');clearTimeout(tTimer);tTimer=setTimeout(()=>{t.className='toast';},3600);}
 async function signInGoogle() {
-  try {
-    const { error } = await db.auth.signInWithOAuth({ 
-      provider: 'google', 
-      options: { redirectTo: window.location.origin + '/' } 
-    });
-    if (error) showAuthMsg(error.message, 'err');
-  } catch(e) { showAuthMsg('Google sign-in failed. Try email/password.', 'err'); }
+  await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://questrixx.netlify.app' } });
 }
 async function signInEmail() {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPass').value;
   const mode = document.getElementById('authScreen').dataset.mode || 'login';
-  if (!email || !pass) { showAuthMsg('Please enter email and password.', 'warn'); return; }
-  const btn = document.getElementById('authSubmit');
-  btn.textContent = 'Please wait...'; btn.disabled = true;
   let error;
   if (mode === 'signup') {
     ({ error } = await db.auth.signUp({ email, password: pass }));
-    if (!error) { showAuthMsg('Account created! Check your email to confirm.', 'ok'); btn.textContent='Create Account'; btn.disabled=false; return; }
+    if (!error) showToast('Check your email to confirm!', 'ok');
   } else {
     ({ error } = await db.auth.signInWithPassword({ email, password: pass }));
   }
-  btn.textContent = mode==='signup'?'Create Account':'Sign In'; btn.disabled=false;
-  if (error) showAuthMsg(error.message, 'err');
-}
-function showAuthMsg(msg, type) {
-  const el = document.getElementById('authMsg');
-  if (!el) { showToast(msg, type==='err'?'err':type==='ok'?'ok':'info'); return; }
-  el.style.display = 'block';
-  el.style.color = type==='err' ? 'var(--terra)' : type==='ok' ? 'var(--sage)' : 'var(--gold)';
-  el.textContent = msg;
+  if (error) showToast(error.message, 'err');
 }
 async function signOut() {
   await db.auth.signOut();
-  currentUser = null;
   showToast('Signed out', 'info');
-}
-function updateAccountUI() {
-  const el = document.getElementById('settingsUserEmail');
-  if (el && currentUser) el.textContent = currentUser.email || 'Signed in';
 }
 function setAuthMode(mode) {
   document.getElementById('authScreen').dataset.mode = mode;
   const isSignup = mode === 'signup';
-  document.getElementById('authBtnLogin').style.background = isSignup ? 'transparent' : 'var(--sage)';
-  document.getElementById('authBtnLogin').style.color = isSignup ? 'var(--muted2)' : '#000';
-  document.getElementById('authBtnSignup').style.background = isSignup ? 'var(--sage)' : 'transparent';
-  document.getElementById('authBtnSignup').style.color = isSignup ? '#000' : 'var(--muted2)';
+  document.getElementById('authBtnLogin').style.background = isSignup ? 'transparent' : 'var(--teal)';
+  document.getElementById('authBtnLogin').style.color = isSignup ? 'var(--muted2)' : '#fff';
+  document.getElementById('authBtnSignup').style.background = isSignup ? 'var(--teal)' : 'transparent';
+  document.getElementById('authBtnSignup').style.color = isSignup ? '#fff' : 'var(--muted2)';
   document.getElementById('authSubmit').textContent = isSignup ? 'Create Account' : 'Sign In';
 }
 </script>
