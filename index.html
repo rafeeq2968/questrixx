@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <meta name="theme-color" content="#080f0b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -514,7 +514,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     </div>
   </div>
   <button id="pwaInstallBtn" style="display:none;margin-top:16px;padding:11px 22px;border:1.5px solid var(--teal);border-radius:10px;background:transparent;color:var(--teal);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;align-items:center;gap:8px">📲 Install App on this Device</button>
-  <div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">Your papers are stored privately. Only you can see your data.</div>
+  <div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">New user? Switch to <b>Create Account</b> above. Already have an account? Use <b>Sign In</b>.</div>
 </div>
 <div id="mainApp">
 
@@ -739,9 +739,9 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   <div class="card hidden" id="byocCard">
     <div class="sec-label"><div class="sec-num" style="background:var(--sage);color:#000">6</div><div><div class="sec-title">Your Source Material</div><div class="sec-desc">AI generates from this content only</div></div></div>
     <div class="drop-zone" id="dropZone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
-      <input type="file" id="fileInput" multiple accept=".txt,.md,.csv" onchange="handleFiles(event)">
+      <input type="file" id="fileInput" multiple accept="*" onchange="handleFiles(event)">
       <div class="drop-ico">📄</div>
-      <div class="drop-txt"><b>Click or drag files here</b><br>.TXT, .MD, .CSV supported. For PDFs — copy-paste text below.</div>
+      <div class="drop-txt"><b>Click or drag files here</b><br>TXT, MD, CSV, JSON — any text file. Paste PDF text below.</div>
       <div class="chip-row" id="chipRow"></div>
     </div>
     <div class="field mt12"><label>Or paste content / notes directly</label>
@@ -815,7 +815,9 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <p class="page-sub">API keys, preferences, stats, and data management.</p>
   </div>
 
-  <div class="setting-group">
+    <div class="setting-group"><div class="sg-label">Account</div><div class="card" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px"><div><div id="settUserEmail" style="font-weight:700;font-size:14px;color:var(--text)">Signed in</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Papers sync across all devices</div></div><button onclick="signOut()" style="padding:9px 18px;border:1.5px solid var(--terra);border-radius:8px;background:transparent;color:var(--terra);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer">Sign Out</button></div></div>
+
+<div class="setting-group">
     <div class="sg-label">API Keys</div>
     <div class="card" style="padding:20px 22px">
       <p style="font-size:12px;color:var(--muted2);margin-bottom:16px;line-height:1.7;font-weight:500">
@@ -864,26 +866,12 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
         <button class="tbtn" style="color:var(--terra)" onclick="clearHistory()">🗑 Clear History</button>
       </div>
       <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.8">
-        All data is stored locally in your browser. Nothing is sent to any server except AI generation calls (sent directly to Gemini/Groq). Your papers are 100% private.
+        Your papers are saved securely to your account. AI generation is handled via our secure server.
       </div>
     </div>
   </div>
 
-  <div class="setting-group">
-    <div class="sg-label">How to Install as App on Your Device</div>
-    <div class="card" style="font-size:13px;color:var(--muted2);line-height:2.1">
-      <b style="color:var(--text)">📱 Android (Chrome):</b> Open site → tap ⋮ menu → "Add to Home Screen" → Install<br>
-      <b style="color:var(--text)">🍎 iPhone (Safari):</b> Open site → tap Share ⬆ → "Add to Home Screen" → Add<br>
-      <b style="color:var(--text)">💻 Windows/Mac (Chrome):</b> Look for install icon in address bar → click → Install<br>
-      <b style="color:var(--text)">🔗 Host your app free:</b> Upload index.html to <a href="https://netlify.com" target="_blank" style="color:var(--gold)">netlify.com</a> → drag & drop → get a live URL
-    </div>
   </div>
-
-  <div class="setting-group">
-    <div class="sg-label">Roadmap</div>
-    <div class="card"><div class="roadmap" id="roadmapList"></div></div>
-  </div>
-</div>
 
 </main>
 </div>
@@ -973,7 +961,7 @@ window.addEventListener('beforeinstallprompt',e=>{
 });
 window.onload = () => {
   // Splash shows for 2.5s then removes — no async blocking
-  setTimeout(removeSplash, 2500);
+  setTimeout(removeSplash, 1500);
   // Build UI (wrapped in try/catch so one failure doesn't break all)
   try{buildQTGrid();}catch(e){}
   try{buildTemplates();}catch(e){}
@@ -997,6 +985,8 @@ window.onload = () => {
 function _showApp(){
   const a=document.getElementById('authScreen'),m=document.getElementById('mainApp');
   if(!a||!m)return;
+  const emailEl=document.getElementById('settUserEmail');
+  if(emailEl&&currentUser)emailEl.textContent=currentUser.email||'Signed in';
   if(currentUser){a.style.display='none';m.style.display='block';}
   else{a.style.display='flex';m.style.display='none';}
 }
@@ -1087,7 +1077,30 @@ function syncDiff(){
 // ── FILES ──
 function handleFiles(e){processFiles(Array.from(e.target.files))}
 function handleDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('drag');processFiles(Array.from(e.dataTransfer.files));}
-function processFiles(files){files.forEach(f=>{const r=new FileReader();r.onload=ev=>{uploadedText+='\n\n---FILE: '+f.name+'---\n'+ev.target.result;const row=document.getElementById('chipRow');const c=document.createElement('div');c.className='chip';c.innerHTML=`📄 ${f.name} <span class="chip-x" onclick="this.parentElement.remove()">✕</span>`;row.appendChild(c);};r.readAsText(f);});}
+function processFiles(files){
+  files.forEach(function(f){
+    var ext = f.name.split(".").pop().toLowerCase();
+    var row = document.getElementById("chipRow");
+    var c = document.createElement("div");
+    c.className = "chip";
+    c.innerHTML = "\uD83D\uDCC4 " + f.name + " <span class=\"chip-x\" onclick=\"this.parentElement.remove()\">\u2715</span>";
+    row.appendChild(c);
+    if(["jpg","jpeg","png","gif","webp","mp4","mp3","zip","exe"].includes(ext)){
+      showToast(f.name + " is not readable - paste content instead","info");
+      row.removeChild(c); return;
+    }
+    var r = new FileReader();
+    r.onload = function(ev){
+      uploadedText += "\n\n---FILE: " + f.name + "---\n" + (ev.target.result||"");
+      showToast(f.name + " added","ok");
+    };
+    r.onerror = function(){
+      showToast("Cannot read " + f.name + ". Try copying the text.","err");
+      row.removeChild(c);
+    };
+    r.readAsText(f);
+  });
+}
 
 // ── COLLECT PARAMS ──
 const v=id=>document.getElementById(id)?.value||'';
@@ -1391,6 +1404,10 @@ async function signInEmail() {
     if (!error) showToast('Check your email to confirm!', 'ok');
   } else {
     ({ error } = await db.auth.signInWithPassword({ email, password: pass }));
+    if(error && (error.message.includes("Invalid") || error.message.includes("invalid"))){
+      showToast("No account found — switched to Create Account","info");
+      setAuthMode("signup"); return;
+    }
   }
   if (error) showToast(error.message, 'err');
 }
