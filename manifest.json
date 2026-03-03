@@ -1,40 +1,36 @@
 {
   "name": "Questrix — AI Question Paper Generator",
   "short_name": "Questrix",
-  "description": "Generate perfect question papers for any exam, level, or subject — manually or with AI.",
+  "description": "Generate any question paper with AI — school, college, competitive exams.",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
   "background_color": "#080f0b",
   "theme_color": "#080f0b",
-  "categories": ["education", "productivity"],
-  "lang": "en",
+  "orientation": "any",
+  "scope": "/",
   "icons": [
-  {
-    "src": "/icon-192.png",
-    "sizes": "192x192",
-    "type": "image/png"
-  },
-  {
-   "src": "/icon-512.png",
-    "sizes": "512x512",
-    "type": "image/png"
-  }
-],
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
   "screenshots": [],
   "shortcuts": [
     {
       "name": "Generate Paper",
       "short_name": "Generate",
-      "description": "Start generating a question paper",
+      "description": "Generate a new question paper",
       "url": "/?view=gen",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "View History",
-      "short_name": "History",
-      "description": "View your saved papers",
-      "url": "/?view=history",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]    }
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }
