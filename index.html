@@ -456,9 +456,28 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   .paper-box{padding:20px 14px}
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+  var cdns = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
+  ];
+  var i = 0;
+  function load() {
+    if (i >= cdns.length) { document.getElementById('cdnErr').style.display='flex'; return; }
+    var s = document.createElement('script'); s.src = cdns[i++]; s.onerror = load; document.head.appendChild(s);
+  }
+  load();
+})();
+</script>
 </head>
 <body>
+<div id="cdnErr" style="display:none;position:fixed;inset:0;z-index:999999;background:#080f0b;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px;text-align:center">
+  <div style="font-size:2.5rem">⚠️</div>
+  <div style="color:#F0EDE6;font-size:1.1rem;font-weight:700;font-family:system-ui,sans-serif">Could not load Questrix</div>
+  <div style="color:#8fa897;font-size:13px;max-width:300px;line-height:1.7;font-family:system-ui,sans-serif">A required script failed to load. Try turning off your ad blocker, switching to Chrome, or using a different network.</div>
+  <button onclick="location.reload()" style="margin-top:8px;padding:12px 28px;background:#6BAF8A;border:none;border-radius:10px;color:#000;font-weight:800;font-size:14px;cursor:pointer">🔄 Retry</button>
+</div>
 <div id="authScreen" data-mode="login" style="display:flex;position:fixed;inset:0;z-index:99998;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch">
   <div style="font-family:'Instrument Serif',serif;font-size:2.1rem;font-weight:700;font-style:italic;color:var(--text)">Ques<span style="color:var(--gold);font-style:normal">trix</span></div>
   <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:8px;margin-bottom:32px">Smart Question Paper Maker</div>
@@ -920,8 +939,8 @@ const SUPA_URL = 'https://wqspitybvtcqzolzjlhd.supabase.co';
 
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indxc3BpdHlidnRjcXpvbHpqbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MjM2NTUsImV4cCI6MjA4ODA5OTY1NX0.8oQa-OvPMM6_CCMLQN6jSIkAk9LaHoCznMV0e0eueps';
 
-const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-
+// db is initialized after CDN loads asynchronously (see window.onload wait loop)
+let db = null;
 let currentUser = null;
 
 // ── QT CONFIG ──
@@ -986,6 +1005,19 @@ window.addEventListener('beforeinstallprompt',e=>{
 window.onload = async () => {
   buildQTGrid(); buildTemplates(); buildRoadmap();
   loadPrefs(); syncDiff(); initCursor(); registerSW();
+
+  // Wait for Supabase CDN to finish loading (tries fallback CDNs, up to 8s)
+  let waited = 0;
+  while (!window.supabase && waited < 8000) {
+    await new Promise(r => setTimeout(r, 150));
+    waited += 150;
+  }
+  if (!window.supabase) {
+    removeSplash();
+    document.getElementById('cdnErr').style.display = 'flex';
+    return;
+  }
+  db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
   // Safety net: ALWAYS remove splash after 3.5s — never leave user stuck (critical for mobile/Safari)
   const splashKill = setTimeout(function() {
@@ -1286,8 +1318,7 @@ async function dlPDF(){
 }
 function dlTXT(){if(!lastGenText){showToast('No paper','err');return;}const b=new Blob([lastGenText],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(v('examName')||'Paper').replace(/\s+/g,'_')+'.txt';a.click();URL.revokeObjectURL(a.href);showToast('TXT downloaded!','ok');}
 function copyTxt(){if(!lastGenText)return;navigator.clipboard.writeText(lastGenText).then(()=>showToast('Copied!','ok'));}
-function printPaper(){if(!lastGenText)return;const w=window.open('','_blank');w.document.write(`<html><head><title>Question Paper</title><style>body{font-family:Georgia,serif;font-size:13px;line-height:1.9;padding:30px 48px;white-space:pre-wrap;color:#111}@media print{body{padding:18px 28px}}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head></div>
+function printPaper(){if(!lastGenText)return;const w=window.open('','_blank');w.document.write(`<html><head><title>Question Paper</title><style>body{font-family:Georgia,serif;font-size:13px;line-height:1.9;padding:30px 48px;white-space:pre-wrap;color:#111}@media print{body{padding:18px 28px}}</style><script>
 </body>${lastGenText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),400);}
 
 // ── DB ──
