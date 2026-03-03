@@ -447,26 +447,6 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<div id="authScreen" data-mode="login" style="display:flex;position:fixed;inset:0;z-index:99998;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;padding:20px">
-  <div style="font-family:'Libre Baskerville',serif;font-size:2.1rem;font-weight:700;font-style:italic;color:var(--ink)">Ques<span style="color:var(--teal);font-style:normal">trix</span></div>
-  <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:8px;margin-bottom:32px">Smart Question Paper Maker</div>
-  <div style="background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:26px 28px;width:min(370px,94vw)">
-    <div style="display:flex;border-radius:9px;overflow:hidden;border:1px solid var(--b2);margin-bottom:20px">
-      <button id="authBtnLogin" onclick="setAuthMode('login')" style="flex:1;padding:9px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;background:var(--teal);color:#fff">Sign In</button>
-      <button id="authBtnSignup" onclick="setAuthMode('signup')" style="flex:1;padding:9px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;background:transparent;color:var(--muted2)">Create Account</button>
-    </div>
-    <button onclick="signInGoogle()" style="width:100%;padding:12px;border:1.5px solid var(--b2);border-radius:10px;background:var(--bg);color:var(--ink);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px">Continue with Google</button>
-    <div style="display:flex;flex-direction:column;gap:9px">
-      <input id="authEmail" type="email" placeholder="your@email.com" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;outline:none;width:100%"/>
-      <input id="authPass" type="password" placeholder="password" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;outline:none;width:100%" onkeydown="if(event.key==='Enter')signInEmail()"/>
-      <button id="authSubmit" onclick="signInEmail()" style="padding:13px;border:none;border-radius:10px;background:var(--teal);color:#fff;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer">Sign In</button>
-    </div>
-  </div>
-  <button id="pwaInstallBtn" style="display:none;margin-top:16px;padding:11px 22px;border:1.5px solid var(--teal);border-radius:10px;background:transparent;color:var(--teal);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;align-items:center;gap:8px">📲 Install App on this Device</button>
-  <div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">Your papers are stored privately. Only you can see your data.</div>
-</div>
-<div id="mainApp">
-
 <!-- ══════ SPLASH SCREEN ══════ -->
 <div id="splash">
   <!-- SVG LOGO -->
@@ -517,6 +497,27 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <div class="sl-dot"></div>
   </div>
 </div>
+
+<div id="authScreen" data-mode="login" style="display:flex;position:fixed;inset:0;z-index:99998;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;padding:20px">
+  <div style="font-family:'Libre Baskerville',serif;font-size:2.1rem;font-weight:700;font-style:italic;color:var(--ink)">Ques<span style="color:var(--teal);font-style:normal">trix</span></div>
+  <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:8px;margin-bottom:32px">Smart Question Paper Maker</div>
+  <div style="background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:26px 28px;width:min(370px,94vw)">
+    <div style="display:flex;border-radius:9px;overflow:hidden;border:1px solid var(--b2);margin-bottom:20px">
+      <button id="authBtnLogin" onclick="setAuthMode('login')" style="flex:1;padding:9px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;background:var(--teal);color:#fff">Sign In</button>
+      <button id="authBtnSignup" onclick="setAuthMode('signup')" style="flex:1;padding:9px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;background:transparent;color:var(--muted2)">Create Account</button>
+    </div>
+    <button onclick="signInGoogle()" style="width:100%;padding:12px;border:1.5px solid var(--b2);border-radius:10px;background:var(--bg);color:var(--ink);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px">Continue with Google</button>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <input id="authEmail" type="email" placeholder="your@email.com" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;outline:none;width:100%"/>
+      <input id="authPass" type="password" placeholder="password" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;outline:none;width:100%" onkeydown="if(event.key==='Enter')signInEmail()"/>
+      <button id="authSubmit" onclick="signInEmail()" style="padding:13px;border:none;border-radius:10px;background:var(--teal);color:#fff;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer">Sign In</button>
+    </div>
+  </div>
+  <button id="pwaInstallBtn" style="display:none;margin-top:16px;padding:11px 22px;border:1.5px solid var(--teal);border-radius:10px;background:transparent;color:var(--teal);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;align-items:center;gap:8px">📲 Install App on this Device</button>
+  <div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">Your papers are stored privately. Only you can see your data.</div>
+</div>
+<div id="mainApp">
+
 
 <!-- CURSOR -->
 <div id="cur"></div>
