@@ -456,6 +456,23 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<div id="authScreen" data-mode="login" style="display:flex;position:fixed;inset:0;z-index:99998;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;padding:20px">
+  <div style="font-family:'Libre Baskerville',serif;font-size:2.1rem;font-weight:700;font-style:italic;color:var(--ink)">Ques<span style="color:var(--teal);font-style:normal">trix</span></div>
+  <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:8px;margin-bottom:32px">Smart Question Paper Maker</div>
+  <div style="background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:26px 28px;width:min(370px,94vw)">
+    <div style="display:flex;border-radius:9px;overflow:hidden;border:1px solid var(--b2);margin-bottom:20px">
+      <button id="authBtnLogin" onclick="setAuthMode('login')" style="flex:1;padding:9px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;background:var(--teal);color:#fff">Sign In</button>
+      <button id="authBtnSignup" onclick="setAuthMode('signup')" style="flex:1;padding:9px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;background:transparent;color:var(--muted2)">Create Account</button>
+    </div>
+    <button onclick="signInGoogle()" style="width:100%;padding:12px;border:1.5px solid var(--b2);border-radius:10px;background:var(--bg);color:var(--ink);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px">Continue with Google</button>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <input id="authEmail" type="email" placeholder="your@email.com" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;outline:none;width:100%"/>
+      <input id="authPass" type="password" placeholder="password" style="padding:11px 13px;border:1.5px solid var(--b2);border-radius:9px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;outline:none;width:100%" onkeydown="if(event.key==='Enter')signInEmail()"/>
+      <button id="authSubmit" onclick="signInEmail()" style="padding:13px;border:none;border-radius:10px;background:var(--teal);color:#fff;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer">Sign In</button>
+    </div>
+  </div>
+</div>
+<div id="mainApp">
 
 <!-- ══════ SPLASH SCREEN ══════ -->
 <div id="splash">
@@ -949,17 +966,35 @@ let currentMode='ai', uploadedText='', lastGenText='';
 const DB='questrix_v1', PREF='questrix_prefs';
 
 // ── INIT ──
-window.onload=()=>{
-  // Splash exit after 2.2s
-  setTimeout(()=>{
-    const s=document.getElementById('splash');
+window.onload = async () => {
+  const { data: { session } } = await db.auth.getSession();
+  currentUser = session?.user || null;
+  db.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user || null;
+    if (currentUser) {
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+      loadHistory(); updateStats(); initKeys();
+    } else {
+      document.getElementById('authScreen').style.display = 'flex';
+      document.getElementById('mainApp').style.display = 'none';
+    }
+  });
+  if (!currentUser) {
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+  } else {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+  }
+  setTimeout(() => {
+    const s = document.getElementById('splash');
     s.classList.add('out');
-    setTimeout(()=>s.remove(),700);
-  },2200);
-
-  buildQTGrid();buildTemplates();buildRoadmap();
-  loadHistory();loadPrefs();updateStats();syncDiff();initKeys();
-  initCursor();registerSW();
+    setTimeout(() => s.remove(), 900);
+  }, 2800);
+  buildQTGrid(); buildTemplates(); buildRoadmap();
+  loadHistory(); loadPrefs(); updateStats(); syncDiff(); initKeys();
+  initCursor(); registerSW(); loadTheme();
 };
 
 // ── SERVICE WORKER ──
@@ -1116,7 +1151,7 @@ Generate the full, complete, untruncated question paper now:`;
 }
 
 // ── API KEYS ──
-function getKey(provider){return localStorage.getItem('questrix_key_'+provider)||HARDCODED[provider]||'';}
+function getKey(provider){return localStorage.getItem('questrix_key_'+provider)||'';}
 function saveKey(provider){
   const inp=document.getElementById('key'+provider.charAt(0).toUpperCase()+provider.slice(1));
   const val=inp.value.trim();if(!val){showToast('Key cannot be empty','err');return;}
@@ -1159,12 +1194,11 @@ async function generate(){
 
   try{
     document.getElementById('aiTag').textContent='● Gemini 1.5 Flash';
-    result=await callGemini(prompt);model='Gemini 1.5 Flash';
+const aiRes=await callAI(prompt);result=aiRes.result;model=aiRes.model;
   }catch(e){
     console.warn('Gemini failed:',e.message,'→ Groq…');
     try{
       document.getElementById('aiTag').textContent='● Groq LLaMA 3.3 70B (backup)';
-      result=await callGroq(prompt);model='Groq LLaMA 3.3 70B';
     }catch(e2){
       clearInterval(tick);
       document.getElementById('progressWrap').classList.remove('on');
@@ -1192,19 +1226,16 @@ async function generate(){
   incStat('papers');
 }
 
-async function callGemini(prompt){
-  const key=getKey('gemini');if(!key)throw new Error('No Gemini key');
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.72,maxOutputTokens:8192}})});
-  const d=await res.json();if(d.error)throw new Error(d.error.message||'Gemini error '+res.status);
-  const t=d.candidates?.[0]?.content?.parts?.[0]?.text;if(!t)throw new Error('Empty response from Gemini');return t;
+async function callAI(prompt) {
+  const res = await fetch(`${SUPA_URL}/functions/v1/generate-paper`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_KEY}` },
+    body: JSON.stringify({ prompt })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return { result: data.result, model: data.model };
 }
-async function callGroq(prompt){
-  const key=getKey('groq');if(!key)throw new Error('No Groq key');
-  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:prompt}],max_tokens:8000,temperature:0.72})});
-  const d=await res.json();if(d.error)throw new Error(d.error.message||'Groq error '+res.status);
-  const t=d.choices?.[0]?.message?.content;if(!t)throw new Error('Empty response from Groq');return t;
-}
-
 // ── OUTPUT ──
 async function dlPDF(){
   if(!lastGenText){showToast('No paper to download','err');return;}
@@ -1223,23 +1254,82 @@ async function dlPDF(){
 function dlTXT(){if(!lastGenText){showToast('No paper','err');return;}const b=new Blob([lastGenText],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(v('examName')||'Paper').replace(/\s+/g,'_')+'.txt';a.click();URL.revokeObjectURL(a.href);showToast('TXT downloaded!','ok');}
 function copyTxt(){if(!lastGenText)return;navigator.clipboard.writeText(lastGenText).then(()=>showToast('Copied!','ok'));}
 function printPaper(){if(!lastGenText)return;const w=window.open('','_blank');w.document.write(`<html><head><title>Question Paper</title><style>body{font-family:Georgia,serif;font-size:13px;line-height:1.9;padding:30px 48px;white-space:pre-wrap;color:#111}@media print{body{padding:18px 28px}}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head><body>${lastGenText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),400);}
+</head></div>
+</body>${lastGenText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),400);}
 
 // ── DB ──
 function getDB(){try{return JSON.parse(localStorage.getItem(DB)||'{"papers":[],"stats":{}}');}catch{return{papers:[],stats:{}};}}
 function setDB(db){localStorage.setItem(DB,JSON.stringify(db));}
-function saveToHistory(p,text,model){const db=getDB();db.papers.unshift({id:Date.now(),ts:new Date().toISOString(),subject:p.subject,examName:p.examName||'Untitled',level:p.level,totalMarks:p.totalMarks,timeLimit:p.timeLimit,qCount:p.qtypes.reduce((a,q)=>a+q.count,0),model,mode:p.mode,text,params:p});if(db.papers.length>100)db.papers=db.papers.slice(0,100);setDB(db);}
-
-function loadHistory(){
-  const db=getDB(),list=document.getElementById('histList');if(!list)return;
-  const c=document.getElementById('histCount');if(c)c.textContent=db.papers.length+' paper'+(db.papers.length!==1?'s':'')+' saved';
-  if(!db.papers.length){list.innerHTML=`<div class="empty-state"><div class="empty-ico">📭</div><div class="empty-ttl">No papers yet</div><div class="empty-sub">Generated papers auto-save here.</div></div>`;return;}
-  list.innerHTML=db.papers.map(e=>`<div class="hist-item"><div class="hist-icon">${e.mode==='byoc'?'📂':'✨'}</div><div class="hist-body"><div class="hist-title">${e.examName} — ${e.subject}</div><div class="hist-meta"><span>${e.level}</span><span>🎯 ${e.totalMarks} marks</span><span>❓ ${e.qCount} Q</span><span>🤖 ${e.model}</span><span>📅 ${new Date(e.ts).toLocaleDateString()}</span></div></div><div class="hist-actions"><button class="hbtn" onclick="viewPaper(${e.id})">View</button><button class="hbtn" onclick="reusePaper(${e.id})">Re-use</button><button class="hbtn del" onclick="delPaper(${e.id})">✕</button></div></div>`).join('');
+async function saveToHistory(p, text, model) {
+  if (!currentUser) return;
+  await db.from('papers').insert({
+    user_id: currentUser.id,
+    exam_name: p.examName || 'Untitled',
+    subject: p.subject || '',
+    level: p.level || '',
+    total_marks: p.totalMarks || '',
+    time_limit: p.timeLimit || '',
+    q_count: p.qtypes.reduce((a, q) => a + q.count, 0),
+    model, mode: p.mode, content: text, params: p
+  });
 }
-function viewPaper(id){const e=getDB().papers.find(p=>p.id===id);if(!e)return;lastGenText=e.text;document.getElementById('paperBox').textContent=e.text;document.getElementById('outMeta').innerHTML=`<span class="meta-tag">📄 ${e.subject}</span><span class="meta-tag">📅 ${new Date(e.ts).toLocaleString()}</span>`;document.getElementById('outWrap').classList.add('on');showView('gen');setTimeout(()=>document.getElementById('outWrap').scrollIntoView({behavior:'smooth'}),200);}
-function reusePaper(id){const e=getDB().papers.find(p=>p.id===id);if(!e||!e.params)return;loadParams(e.params);showView('gen');showToast('Settings loaded — edit and regenerate','info');}
-function delPaper(id){const db=getDB();db.papers=db.papers.filter(p=>p.id!==id);setDB(db);loadHistory();showToast('Deleted','info');}
-function clearHistory(){if(!confirm('Delete all saved papers?'))return;const db=getDB();db.papers=[];setDB(db);loadHistory();showToast('History cleared','info');}
+async function loadHistory() {
+  const list = document.getElementById('histList');
+  if (!list || !currentUser) return;
+  const { data: papers } = await db.from('papers')
+    .select('*').eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false }).limit(100);
+  window._papers = papers || [];
+  const c = document.getElementById('histCount');
+  if (c) c.textContent = (papers?.length || 0) + ' papers saved';
+  if (!papers?.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-ico">📭</div><div class="empty-ttl">No papers yet</div><div class="empty-sub">Generated papers auto-save here.</div></div>';
+    return;
+  }
+  list.innerHTML = papers.map(e => `
+    <div class="hist-item">
+      <div class="hist-icon">${e.mode==='byoc'?'📂':'✨'}</div>
+      <div class="hist-body">
+        <div class="hist-title">${e.exam_name} — ${e.subject}</div>
+        <div class="hist-meta">
+          <span>${e.level}</span><span>🎯 ${e.total_marks} marks</span>
+          <span>❓ ${e.q_count} Q</span><span>🤖 ${e.model}</span>
+          <span>📅 ${new Date(e.created_at).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <div class="hist-actions">
+        <button class="hbtn" onclick="viewPaper('${e.id}')">View</button>
+        <button class="hbtn" onclick="reusePaper('${e.id}')">Re-use</button>
+        <button class="hbtn del" onclick="delPaper('${e.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+  
+  
+function viewPaper(id) {
+  const e = window._papers?.find(p => p.id === id);
+  if (!e) return;
+  lastGenText = e.content;
+  document.getElementById('paperBox').textContent = e.content;
+  document.getElementById('outMeta').innerHTML = `<span class="meta-tag">📄 ${e.subject}</span><span class="meta-tag">📅 ${new Date(e.created_at).toLocaleString()}</span>`;
+  document.getElementById('outWrap').classList.add('on');
+  showView('gen');
+}
+function reusePaper(id) {
+  const e = window._papers?.find(p => p.id === id);
+  if (!e || !e.params) return;
+  loadParams(e.params); showView('gen');
+  showToast('Settings loaded — edit and regenerate', 'info');
+}
+async function delPaper(id) {
+  await db.from('papers').delete().eq('id', id).eq('user_id', currentUser.id);
+  loadHistory(); showToast('Deleted', 'info');
+}
+async function clearHistory() {
+  if (!confirm('Delete ALL saved papers?')) return;
+  await db.from('papers').delete().eq('user_id', currentUser.id);
+  loadHistory(); showToast('History cleared', 'info');
+}
 
 // ── TEMPLATES ──
 function buildTemplates(){
@@ -1284,6 +1374,35 @@ function importData(){const inp=document.createElement('input');inp.type='file';
 
 let tTimer;
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');clearTimeout(tTimer);tTimer=setTimeout(()=>{t.className='toast';},3600);}
+async function signInGoogle() {
+  await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://questrixx.netlify.app' } });
+}
+async function signInEmail() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPass').value;
+  const mode = document.getElementById('authScreen').dataset.mode || 'login';
+  let error;
+  if (mode === 'signup') {
+    ({ error } = await db.auth.signUp({ email, password: pass }));
+    if (!error) showToast('Check your email to confirm!', 'ok');
+  } else {
+    ({ error } = await db.auth.signInWithPassword({ email, password: pass }));
+  }
+  if (error) showToast(error.message, 'err');
+}
+async function signOut() {
+  await db.auth.signOut();
+  showToast('Signed out', 'info');
+}
+function setAuthMode(mode) {
+  document.getElementById('authScreen').dataset.mode = mode;
+  const isSignup = mode === 'signup';
+  document.getElementById('authBtnLogin').style.background = isSignup ? 'transparent' : 'var(--teal)';
+  document.getElementById('authBtnLogin').style.color = isSignup ? 'var(--muted2)' : '#fff';
+  document.getElementById('authBtnSignup').style.background = isSignup ? 'var(--teal)' : 'transparent';
+  document.getElementById('authBtnSignup').style.color = isSignup ? '#fff' : 'var(--muted2)';
+  document.getElementById('authSubmit').textContent = isSignup ? 'Create Account' : 'Sign In';
+}
 </script>
 </body>
 </html>
