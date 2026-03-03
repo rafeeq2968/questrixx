@@ -453,6 +453,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   .paper-box{padding:20px 14px}
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -892,10 +893,13 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 //  Gemini: aistudio.google.com → Get API Key → Create
 //  Groq:   console.groq.com → API Keys → Create API Key
 // ══════════════════════════════════════════════════
-const HARDCODED = {
-  gemini: '',  // ← PASTE GEMINI KEY HERE (starts with AIzaSy...)
-  groq:   ''   // ← PASTE GROQ KEY HERE   (starts with gsk_...)
-};
+const SUPA_URL = 'https://wqspitybvtcqzolzjlhd.supabase.co';
+
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indxc3BpdHlidnRjcXpvbHpqbGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MjM2NTUsImV4cCI6MjA4ODA5OTY1NX0.8oQa-OvPMM6_CCMLQN6jSIkAk9LaHoCznMV0e0eueps';
+
+const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;
 
 // ── QT CONFIG ──
 const QT=[
@@ -1218,7 +1222,8 @@ async function dlPDF(){
 }
 function dlTXT(){if(!lastGenText){showToast('No paper','err');return;}const b=new Blob([lastGenText],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(v('examName')||'Paper').replace(/\s+/g,'_')+'.txt';a.click();URL.revokeObjectURL(a.href);showToast('TXT downloaded!','ok');}
 function copyTxt(){if(!lastGenText)return;navigator.clipboard.writeText(lastGenText).then(()=>showToast('Copied!','ok'));}
-function printPaper(){if(!lastGenText)return;const w=window.open('','_blank');w.document.write(`<html><head><title>Question Paper</title><style>body{font-family:Georgia,serif;font-size:13px;line-height:1.9;padding:30px 48px;white-space:pre-wrap;color:#111}@media print{body{padding:18px 28px}}</style></head><body>${lastGenText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),400);}
+function printPaper(){if(!lastGenText)return;const w=window.open('','_blank');w.document.write(`<html><head><title>Question Paper</title><style>body{font-family:Georgia,serif;font-size:13px;line-height:1.9;padding:30px 48px;white-space:pre-wrap;color:#111}@media print{body{padding:18px 28px}}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head><body>${lastGenText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),400);}
 
 // ── DB ──
 function getDB(){try{return JSON.parse(localStorage.getItem(DB)||'{"papers":[],"stats":{}}');}catch{return{papers:[],stats:{}};}}
