@@ -971,34 +971,35 @@ window.addEventListener('beforeinstallprompt',e=>{
   const btn=document.getElementById('pwaInstallBtn');
   if(btn){btn.style.display='flex';btn.onclick=async()=>{deferredPrompt.prompt();const{outcome}=await deferredPrompt.userChoice;if(outcome==='accepted')btn.style.display='none';deferredPrompt=null;};}
 });
-window.onload = async () => {
-  setTimeout(removeSplash, 2800);
-  buildQTGrid(); buildTemplates(); buildRoadmap();
-  loadPrefs(); syncDiff(); initCursor(); registerSW();
-  try {
-    const r = await Promise.race([db.auth.getSession(), new Promise(res=>setTimeout(()=>res({data:{session:null}}),5000))]);
-    currentUser = r.data.session?.user || null;
-  } catch(e){ currentUser=null; }
-  db.auth.onAuthStateChange((event,session)=>{
-    currentUser=session?.user||null;
-    if(currentUser){
-      document.getElementById('authScreen').style.display='none';
-      document.getElementById('mainApp').style.display='block';
-      loadHistory();updateStats();initKeys();
-    } else {
-      document.getElementById('authScreen').style.display='flex';
-      document.getElementById('mainApp').style.display='none';
-    }
+window.onload = () => {
+  // Splash shows for 2.5s then removes — no async blocking
+  setTimeout(removeSplash, 2500);
+  // Build UI (wrapped in try/catch so one failure doesn't break all)
+  try{buildQTGrid();}catch(e){}
+  try{buildTemplates();}catch(e){}
+  try{buildRoadmap();}catch(e){}
+  try{loadPrefs();}catch(e){}
+  try{syncDiff();}catch(e){}
+  try{initCursor();}catch(e){}
+  try{registerSW();}catch(e){}
+  // Auth state listener
+  db.auth.onAuthStateChange((ev,sess)=>{
+    currentUser=sess?.user||null;
+    _showApp();
+    if(currentUser){try{loadHistory();}catch(e){}try{updateStats();}catch(e){}try{initKeys();}catch(e){}}
   });
-  if(!currentUser){
-    document.getElementById('authScreen').style.display='flex';
-    document.getElementById('mainApp').style.display='none';
-  } else {
-    document.getElementById('authScreen').style.display='none';
-    document.getElementById('mainApp').style.display='block';
-    loadHistory();updateStats();initKeys();
-  }
+  // Check existing session
+  db.auth.getSession().then(r=>{
+    currentUser=r.data.session?.user||null;
+    _showApp();
+  }).catch(()=>{currentUser=null;_showApp();});
 };
+function _showApp(){
+  const a=document.getElementById('authScreen'),m=document.getElementById('mainApp');
+  if(!a||!m)return;
+  if(currentUser){a.style.display='none';m.style.display='block';}
+  else{a.style.display='flex';m.style.display='none';}
+}
 
 // ── SERVICE WORKER ──
 function registerSW(){
@@ -1378,7 +1379,7 @@ function importData(){const inp=document.createElement('input');inp.type='file';
 let tTimer;
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');clearTimeout(tTimer);tTimer=setTimeout(()=>{t.className='toast';},3600);}
 async function signInGoogle() {
-  await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://questrixx.netlify.app' } });
+  await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://questrixx.vercel.app' } });
 }
 async function signInEmail() {
   const email = document.getElementById('authEmail').value.trim();
