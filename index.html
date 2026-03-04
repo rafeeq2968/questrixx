@@ -34,8 +34,7 @@ body{font-family:'Cabinet Grotesk',system-ui,sans-serif;background:var(--bg);col
 #cursorDot.big{width:18px;height:18px;opacity:0.5}
 @media(hover:none),(pointer:coarse){#cursorDot{display:none!important}}
 /* Mobile touch dot — follows finger */
-#mobileDot{display:none;position:fixed;width:11px;height:11px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:999999;opacity:0;top:0;left:0;will-change:transform;transform:translateZ(0)}
-@media(hover:none),(pointer:coarse){#mobileDot{display:block}}
+#mobileDot{display:none}
 #splash{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.7s var(--ease)}
 #splash.out{opacity:0;pointer-events:none}
 .splash-logo{width:90px;height:90px;animation:splashPop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.1s both}
@@ -1026,26 +1025,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ── Mobile touch dot — uses pointermove (full refresh rate, no throttle) ──
-  var mdot = document.getElementById('mobileDot');
-  if (mdot) {
-    var _half = 5.5;
-    // pointermove fires at display refresh rate (60-120fps), unlike throttled touchmove
-    document.addEventListener('pointermove', function(e) {
-      if (e.pointerType === 'touch' || e.pointerType === 'pen') {
-        mdot.style.transform = 'translate3d(' + (e.clientX - _half) + 'px,' + (e.clientY - _half) + 'px,0)';
-        mdot.style.opacity = '1';
-      }
-    });
-    document.addEventListener('pointerdown', function(e) {
-      if (e.pointerType === 'touch' || e.pointerType === 'pen') {
-        mdot.style.transform = 'translate3d(' + (e.clientX - _half) + 'px,' + (e.clientY - _half) + 'px,0)';
-        mdot.style.opacity = '1';
-      }
-    });
-    document.addEventListener('pointerup',     function(e) { if (e.pointerType === 'touch' || e.pointerType === 'pen') mdot.style.opacity = '0'; });
-    document.addEventListener('pointercancel', function(e) { if (e.pointerType === 'touch' || e.pointerType === 'pen') mdot.style.opacity = '0'; });
-  }
+  // mobile dot removed — desktop cursor dot only
 
   // ── Slider touch shield: block QT grid touches during slider drag ──
   var slWrap = document.querySelector('.sl-wrap');
