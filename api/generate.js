@@ -1,8 +1,21 @@
 // ═══════════════════════════════════════════════════════════════════
 // Questrix — Vercel Serverless Function  /api/generate.js
-// Both Gemini and Groq are used with EQUAL weight (random pick).
-// If the chosen one fails, the other is tried automatically.
+// Tries 5 models across 2 providers — if any one works, it succeeds.
 // ═══════════════════════════════════════════════════════════════════
+
+// Fetch with a hard timeout so one slow model doesn't block the others
+async function fetchWithTimeout(url, options, ms) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, { ...options, signal: ctrl.signal });
+    clearTimeout(timer);
+    return r;
+  } catch(e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,23 +27,29 @@ export default async function handler(req, res) {
 
   const { prompt } = req.body || {};
   if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: 'Missing prompt' });
-  if (prompt.length > 50000) return res.status(400).json({ error: 'Prompt too long' });
 
   const GEMINI_KEY = process.env.GEMINI_API_KEY;
   const GROQ_KEY   = process.env.GROQ_API_KEY;
 
-  // ─── Equal load balancing: randomly pick which AI goes first ────
-  // If the first one fails for any reason, the second is tried automatically.
-  const useGeminiFirst = Math.random() < 0.5;
-  const order = useGeminiFirst ? ['gemini', 'groq'] : ['groq', 'gemini'];
+  if (!GEMINI_KEY && !GROQ_KEY) {
+    return res.status(500).json({
+      error: 'API keys not configured. Go to Vercel → Settings → Environment Variables and add GEMINI_API_KEY and GROQ_API_KEY, then Redeploy.'
+    });
+  }
 
-  for (const engine of order) {
+  const errors = [];
 
-    // ── GEMINI ──────────────────────────────────────────────────────
-    if (engine === 'gemini' && GEMINI_KEY) {
+  // ── GEMINI: try 2.0-flash first, then 1.5-flash ─────────────────
+  if (GEMINI_KEY) {
+    const geminiModels = [
+      { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+      { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+      { id: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B' },
+    ];
+    for (const m of geminiModels) {
       try {
-        const r = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+        const r = await fetchWithTimeout(
+          `https://generativelanguage.googleapis.com/v1beta/models/${m.id}:generateContent?key=${GEMINI_KEY}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -38,55 +57,76 @@ export default async function handler(req, res) {
               contents: [{ parts: [{ text: prompt }] }],
               generationConfig: { maxOutputTokens: 8192, temperature: 0.7 }
             })
-          }
+          },
+          25000 // 25s per model attempt
         );
         if (r.ok) {
           const d = await r.json();
           const text = d?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) return res.status(200).json({ result: text, model: 'Gemini 1.5 Flash' });
+          if (text) return res.status(200).json({ result: text, model: m.label });
+          errors.push(`${m.label}: empty response`);
+        } else {
+          const eb = await r.json().catch(() => ({}));
+          const msg = eb?.error?.message || `HTTP ${r.status}`;
+          errors.push(`${m.label}: ${msg}`);
+          // Stop trying Gemini on auth errors — key is wrong
+          if (r.status === 400 || r.status === 403) break;
         }
-        const eb = await r.json().catch(() => ({}));
-        console.warn('Gemini failed:', eb?.error?.message || r.status, '— trying next');
-      } catch (e) {
-        console.warn('Gemini exception:', e.message, '— trying next');
+      } catch(e) {
+        errors.push(`${m.label}: ${e.message}`);
       }
     }
+  }
 
-    // ── GROQ ────────────────────────────────────────────────────────
-    if (engine === 'groq' && GROQ_KEY) {
+  // ── GROQ: try fast model first, then versatile ───────────────────
+  if (GROQ_KEY) {
+    const p = prompt.length > 16000
+      ? prompt.substring(0, 16000) + '\n\n[Trimmed. Generate complete paper from above specifications.]'
+      : prompt;
+
+    const groqModels = [
+      { id: 'llama-3.1-8b-instant',    label: 'Questrix AI (Fast)' },
+      { id: 'llama-3.3-70b-versatile', label: 'Questrix AI' },
+      { id: 'mixtral-8x7b-32768',      label: 'Questrix AI (Mix)' },
+    ];
+    for (const m of groqModels) {
       try {
-        const p = prompt.length > 16000
-          ? prompt.substring(0, 16000) + '\n\n[Trimmed. Generate complete paper from above specifications.]'
-          : prompt;
-
-        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'user', content: p }],
-            max_tokens: 8000,
-            temperature: 0.7
-          })
-        });
+        const r = await fetchWithTimeout(
+          'https://api.groq.com/openai/v1/chat/completions',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+            body: JSON.stringify({
+              model: m.id,
+              messages: [{ role: 'user', content: p }],
+              max_tokens: 8000,
+              temperature: 0.7
+            })
+          },
+          25000
+        );
         if (r.ok) {
           const d = await r.json();
           const text = d?.choices?.[0]?.message?.content;
-          if (text) return res.status(200).json({ result: text, model: 'Groq LLaMA 3.3' });
+          if (text) return res.status(200).json({ result: text, model: m.label });
+          errors.push(`${m.label}: empty response`);
+        } else {
+          const eb = await r.json().catch(() => ({}));
+          const msg = eb?.error?.message || `HTTP ${r.status}`;
+          errors.push(`${m.label}: ${msg}`);
+          // Stop on auth error
+          if (r.status === 401) break;
         }
-        const eb = await r.json().catch(() => ({}));
-        console.warn('Groq failed:', eb?.error?.message || r.status);
-      } catch (e) {
-        console.warn('Groq exception:', e.message);
+      } catch(e) {
+        errors.push(`${m.label}: ${e.message}`);
       }
     }
   }
 
-  // Both failed
-  if (!GEMINI_KEY && !GROQ_KEY) {
-    return res.status(500).json({
-      error: 'API keys not configured. Go to Vercel → Settings → Environment Variables and add GEMINI_API_KEY and GROQ_API_KEY, then Redeploy.'
-    });
-  }
-  return res.status(500).json({ error: 'AI generation failed. Please try again.' });
+  // All models failed — return detailed error for diagnosis
+  console.error('All models failed:', errors);
+  return res.status(500).json({
+    error: 'AI generation failed. Please try again.',
+    detail: errors.join(' | ')
+  });
 }

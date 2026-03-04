@@ -34,7 +34,7 @@ body{font-family:'Cabinet Grotesk',system-ui,sans-serif;background:var(--bg);col
 #cursorDot.big{width:18px;height:18px;opacity:0.5}
 @media(hover:none),(pointer:coarse){#cursorDot{display:none!important}}
 /* Mobile touch dot — follows finger */
-#mobileDot{display:none;position:fixed;width:11px;height:11px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:999999;box-shadow:0 0 8px rgba(232,168,56,0.6);opacity:0;top:0;left:0;will-change:transform}
+#mobileDot{display:none;position:fixed;width:11px;height:11px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:999999;opacity:0;top:0;left:0;will-change:transform;transform:translateZ(0)}
 @media(hover:none),(pointer:coarse){#mobileDot{display:block}}
 #splash{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.7s var(--ease)}
 #splash.out{opacity:0;pointer-events:none}
@@ -1026,29 +1026,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ── Mobile touch dot — follows finger exactly like desktop cursor ──
+  // ── Mobile touch dot — uses pointermove (full refresh rate, no throttle) ──
   var mdot = document.getElementById('mobileDot');
   if (mdot) {
-    var _mx = 0, _my = 0, _mraf = null, _mVisible = false;
-    function _rafUpdate() {
-      mdot.style.transform = 'translate(' + (_mx - 5) + 'px,' + (_my - 5) + 'px)';
-      _mraf = null;
-    }
-    function _scheduleMove(x, y) {
-      _mx = x; _my = y;
-      if (!_mraf) _mraf = requestAnimationFrame(_rafUpdate);
-    }
-    document.addEventListener('touchstart', function(e) {
-      var t = e.touches[0]; if (!t) return;
-      _scheduleMove(t.clientX, t.clientY);
-      if (!_mVisible) { mdot.style.opacity = '1'; _mVisible = true; }
-    }, {passive: true});
-    document.addEventListener('touchmove', function(e) {
-      var t = e.touches[0]; if (!t) return;
-      _scheduleMove(t.clientX, t.clientY);
-    }, {passive: true});
-    document.addEventListener('touchend',   function() { mdot.style.opacity = '0'; _mVisible = false; }, {passive: true});
-    document.addEventListener('touchcancel',function() { mdot.style.opacity = '0'; _mVisible = false; }, {passive: true});
+    var _half = 5.5;
+    // pointermove fires at display refresh rate (60-120fps), unlike throttled touchmove
+    document.addEventListener('pointermove', function(e) {
+      if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+        mdot.style.transform = 'translate3d(' + (e.clientX - _half) + 'px,' + (e.clientY - _half) + 'px,0)';
+        mdot.style.opacity = '1';
+      }
+    });
+    document.addEventListener('pointerdown', function(e) {
+      if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+        mdot.style.transform = 'translate3d(' + (e.clientX - _half) + 'px,' + (e.clientY - _half) + 'px,0)';
+        mdot.style.opacity = '1';
+      }
+    });
+    document.addEventListener('pointerup',     function(e) { if (e.pointerType === 'touch' || e.pointerType === 'pen') mdot.style.opacity = '0'; });
+    document.addEventListener('pointercancel', function(e) { if (e.pointerType === 'touch' || e.pointerType === 'pen') mdot.style.opacity = '0'; });
   }
 
   // ── Slider touch shield: block QT grid touches during slider drag ──
@@ -1796,7 +1792,9 @@ async function callAI(prompt) {
     });
     if (!res.ok) {
       var errData = await res.json().catch(function() { return {}; });
-      throw new Error(errData.error || 'Server error ' + res.status);
+      var errMsg = errData.error || 'Server error ' + res.status;
+      if (errData.detail) errMsg += ' (' + errData.detail + ')';
+      throw new Error(errMsg);
     }
     var data = await res.json();
     if (!data.result) throw new Error('Empty response from server');
