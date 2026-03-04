@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <meta name="theme-color" content="#080f0b">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -150,7 +150,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sw input:checked+.sw-bg{background:var(--gold);border-color:var(--gold)}
 .sw input:checked+.sw-bg::before{transform:translateX(17px);background:#000}
 .sl-wrap{display:flex;flex-direction:column;gap:16px}
-.sl-row{display:grid;grid-template-columns:100px 1fr 48px;align-items:center;gap:14px}
+.sl-row{display:grid;grid-template-columns:100px 1fr 48px;align-items:center;gap:14px;touch-action:pan-x;position:relative;z-index:2}
 .sl-lbl{font-size:12px;font-weight:700}.sl-easy{color:var(--sage)}.sl-med{color:var(--gold)}.sl-hard{color:var(--terra)}
 input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:3px;border-radius:999px;outline:none;cursor:pointer;background:var(--s4)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--gold);border:2px solid #000;box-shadow:0 0 8px var(--gold-glow);transition:.15s}
@@ -222,7 +222,9 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 .out-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .out-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
 .meta-tag{background:var(--s3);border:1px solid var(--b2);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--muted2)}
-.paper-box{font-family:Georgia,serif;font-size:13px;line-height:1.95;white-space:pre-wrap;color:var(--text);background:var(--s2);border-radius:var(--r2);padding:24px;border:1px solid var(--b1)}
+.paper-box{font-family:'Georgia',serif;font-size:13px;line-height:2;color:#1a1a1a;background:#fafaf7;border-radius:6px;padding:40px 44px;border:1px solid #d8d0bc;min-height:200px;box-shadow:0 2px 20px rgba(0,0,0,0.15),0 0 0 1px rgba(0,0,0,0.04)}
+.paper-box[contenteditable=true]{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(245,195,80,0.15);cursor:text}
+.paper-box[contenteditable=true]:focus{box-shadow:0 0 0 3px rgba(245,195,80,0.25)}
 
 /* ── HISTORY ── */
 .hist-list{display:flex;flex-direction:column;gap:10px}
@@ -362,8 +364,8 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 
   <div class="auth-card">
     <div class="auth-tabs">
-      <button class="auth-tab on" id="tabLogin" onclick="setAuthMode('login')">Sign In</button>
-      <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Create Account</button>
+      <button class="auth-tab on" id="tabLogin" onclick="setAuthMode('login')">Login</button>
+      <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Sign Up</button>
     </div>
     <button class="auth-google" onclick="signInGoogle()">
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
@@ -373,7 +375,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <input class="auth-inp" id="authEmail" type="email" placeholder="your@email.com" autocomplete="email"/>
     <input class="auth-inp" id="authPass" type="password" placeholder="Password (min 6 characters)" autocomplete="current-password" onkeydown="if(event.key==='Enter')signInEmail()"/>
     <input class="auth-inp hidden" id="authPassConfirm" type="password" placeholder="Confirm password" autocomplete="new-password" onkeydown="if(event.key==='Enter')signInEmail()"/>
-    <button class="auth-submit" id="authSubmit" onclick="signInEmail()">Sign In</button>
+    <button class="auth-submit" id="authSubmit" onclick="signInEmail()">Login</button>
     <a href="#" class="auth-forgot" id="authForgotLink" onclick="resetPassword();return false">Forgot password?</a>
   </div>
 
@@ -547,9 +549,9 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   <div class="card">
     <div class="sec-label"><div class="sec-num">5</div><div><div class="sec-title">Difficulty Distribution</div><div class="sec-desc">Set your preferred mix — optional</div></div></div>
     <div class="sl-wrap">
-      <div class="sl-row"><span class="sl-lbl sl-easy">Easy</span><input type="range" id="slEasy" min="0" max="100" step="10" value="30" oninput="syncDiff()"><span class="sl-val" id="vEasy">30%</span></div>
-      <div class="sl-row"><span class="sl-lbl sl-med">Medium</span><input type="range" id="slMedium" min="0" max="100" step="10" value="50" oninput="syncDiff()"><span class="sl-val" id="vMedium">50%</span></div>
-      <div class="sl-row"><span class="sl-lbl sl-hard">Hard</span><input type="range" id="slHard" min="0" max="100" step="10" value="20" oninput="syncDiff()"><span class="sl-val" id="vHard">20%</span></div>
+      <div class="sl-row"><span class="sl-lbl sl-easy">Easy</span><input type="range" id="slEasy" style="touch-action:pan-x" min="0" max="100" step="10" value="30" oninput="syncDiff()"><span class="sl-val" id="vEasy">30%</span></div>
+      <div class="sl-row"><span class="sl-lbl sl-med">Medium</span><input type="range" id="slMedium" style="touch-action:pan-x" min="0" max="100" step="10" value="50" oninput="syncDiff()"><span class="sl-val" id="vMedium">50%</span></div>
+      <div class="sl-row"><span class="sl-lbl sl-hard">Hard</span><input type="range" id="slHard" style="touch-action:pan-x" min="0" max="100" step="10" value="20" oninput="syncDiff()"><span class="sl-val" id="vHard">20%</span></div>
     </div>
     <div id="diffWarn" class="hidden mt8" style="font-size:12px;color:var(--gold)">ℹ Total is <span id="diffTotal">100</span>% — AI will proportionally adjust if not 100%</div>
   </div>
@@ -591,12 +593,14 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   <div class="out-wrap" id="outWrap">
     <div class="card" style="padding:18px 22px">
       <div class="out-bar">
-        <button class="tbtn primary" onclick="dlPDF()">⬇ PDF</button>
+        <button class="tbtn primary" onclick="dlPDF()">⬇ Download PDF</button>
         <button class="tbtn" onclick="dlTXT()">📄 TXT</button>
         <button class="tbtn" onclick="copyTxt()">📋 Copy</button>
         <button class="tbtn" onclick="printPaper()">🖨 Print</button>
         <button class="tbtn" onclick="generate()">🔄 Regenerate</button>
+        <button class="tbtn" id="editToggleBtn" onclick="toggleEditMode()" style="color:var(--gold);border-color:var(--gold)">✏️ Edit</button>
       </div>
+      <div id="editHint" style="display:none;font-size:11px;color:var(--gold);font-weight:600;padding:6px 0 2px">✏️ Editing mode — click any text to edit. Changes are saved automatically when you download.</div>
       <div class="out-meta" id="outMeta"></div>
       <div class="paper-box" id="paperBox"></div>
     </div>
@@ -633,6 +637,27 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <div class="eyebrow"><span class="eyebrow-dot"></span>Configuration</div>
     <h1 class="page-title"><span>Settings</span></h1>
     <p class="page-sub">Account, preferences, and data.</p>
+  </div>
+
+  <div class="setting-group">
+    <div class="sg-label">AI Engine</div>
+    <div class="card" style="padding:20px 22px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <span style="width:10px;height:10px;border-radius:50%;background:#6BAF8A;box-shadow:0 0 10px #6BAF8A;display:inline-block;flex-shrink:0;animation:pulse 2s infinite"></span>
+        <span style="font-size:14px;font-weight:800;color:var(--text)">Smart Buddy AI — Active</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted2)">
+          <span style="color:#6BAF8A;font-weight:700">✓ Primary</span>
+          <span>Gemini 1.5 Flash — High quality, fast generation</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted2)">
+          <span style="color:var(--gold);font-weight:700">✓ Backup</span>
+          <span>Groq LLaMA 3.3 70B — Auto-activates if Gemini is busy</span>
+        </div>
+      </div>
+      <p style="font-size:11.5px;color:var(--muted);line-height:1.7;border-top:1px solid var(--b1);padding-top:10px;margin:0">🔒 AI is fully managed server-side. No setup needed — just generate!</p>
+    </div>
   </div>
 
   <div class="setting-group">
@@ -906,7 +931,7 @@ function setAuthMode(mode) {
   var isSignup = mode === 'signup';
   document.getElementById('tabLogin').classList.toggle('on', !isSignup);
   document.getElementById('tabSignup').classList.toggle('on', isSignup);
-  document.getElementById('authSubmit').textContent = isSignup ? 'Create Account' : 'Sign In';
+  document.getElementById('authSubmit').textContent = isSignup ? 'Sign Up' : 'Login';
   var confirm = document.getElementById('authPassConfirm');
   if (confirm) confirm.classList.toggle('hidden', !isSignup);
   var forgot = document.getElementById('authForgotLink');
@@ -937,7 +962,7 @@ async function signInEmail() {
   if (pass.length < 6) { showToast('Password must be at least 6 characters', 'err'); return; }
 
   document.getElementById('authSubmit').disabled = true;
-  document.getElementById('authSubmit').textContent = authMode === 'signup' ? 'Creating…' : 'Signing in…';
+  document.getElementById('authSubmit').textContent = authMode === 'signup' ? 'Creating…' : 'Logging in…';
 
   try {
     var error;
@@ -955,6 +980,14 @@ async function signInEmail() {
     } else {
       var res2 = await supa.auth.signInWithPassword({ email: email, password: pass });
       error = res2.error;
+      if (error) {
+        var em = (error.message || '').toLowerCase();
+        if (em.includes('invalid login') || em.includes('invalid credentials') || em.includes('user not found')) {
+          showToast('No account found — switching to Sign Up…', 'info');
+          setTimeout(function() { setAuthMode('signup'); }, 800);
+          error = null;
+        }
+      }
     }
     if (error) showToast(error.message, 'err');
   } catch(e) {
@@ -962,7 +995,7 @@ async function signInEmail() {
   }
 
   document.getElementById('authSubmit').disabled = false;
-  document.getElementById('authSubmit').textContent = authMode === 'signup' ? 'Create Account' : 'Sign In';
+  document.getElementById('authSubmit').textContent = authMode === 'signup' ? 'Sign Up' : 'Login';
 }
 
 async function resetPassword() {
@@ -1003,14 +1036,68 @@ var QT = [
 ];
 
 var TEMPLATES = [
-  {icon:'🎓',name:'JEE Main Mock',badge:'Competitive',desc:'100 MCQs, 300 marks, 3 hrs, ¼ negative, Physics+Chemistry+Maths',p:{level:'JEE Main',examType:'Mock / Practice Test',totalMarks:'300',timeLimit:'180',sections:'3',negMark:true,negVal:'1/4 mark',qtypes:{mcq:{c:100,m:4}}}},
-  {icon:'🏥',name:'NEET UG Mock',badge:'Medical',desc:'180 MCQs, 720 marks, 3h 20m, ¼ negative',p:{level:'NEET UG',examType:'Mock / Practice Test',totalMarks:'720',timeLimit:'200',sections:'3',negMark:true,negVal:'1/4 mark',qtypes:{mcq:{c:180,m:4}}}},
-  {icon:'📘',name:'CBSE Class 12 Board',badge:'School',desc:'MCQ+Short+Long, 3 sections, 80 marks, 3 hrs',p:{level:'Class 11–12 (Science)',examType:'Final / Annual Exam',totalMarks:'80',timeLimit:'180',sections:'3',negMark:false,qtypes:{mcq:{c:20,m:1},short:{c:7,m:3},long:{c:5,m:5}}}},
-  {icon:'🏛',name:'UPSC Prelims GS-1',badge:'Civil Services',desc:'100 MCQs, 200 marks, 2 hrs, ⅓ negative',p:{level:'UPSC Prelims',totalMarks:'200',timeLimit:'120',sections:'1',negMark:true,negVal:'1/3 mark',qtypes:{mcq:{c:100,m:2}}}},
-  {icon:'📊',name:'UG University Exam',badge:'College',desc:'Fill+Short+Long, 75 marks, 3 hrs',p:{level:'Undergraduate Year 2–3',examType:'Mid-Semester / Half-Yearly',totalMarks:'75',timeLimit:'180',sections:'3',negMark:false,qtypes:{fitb:{c:5,m:1},short:{c:5,m:5},long:{c:5,m:10}}}},
-  {icon:'💼',name:'CAT Mock',badge:'MBA',desc:'QA+VARC+DILR, 40 questions, 120 marks, 1 hr',p:{level:'CAT / MBA',totalMarks:'120',timeLimit:'60',sections:'3',negMark:true,negVal:'1 mark',qtypes:{mcq:{c:40,m:3}}}},
-  {icon:'🔬',name:'Class 10 Science Test',badge:'School',desc:'30-mark unit test, MCQ+Short+Long, 90 min',p:{level:'Class 9–10 (CBSE / State)',examType:'Unit Test / Quiz',totalMarks:'30',timeLimit:'90',sections:'2',negMark:false,qtypes:{mcq:{c:5,m:1},short:{c:5,m:2},long:{c:2,m:5}}}},
-  {icon:'⚡',name:'GATE CSE Mock',badge:'Engineering',desc:'65 questions, 100 marks, 3 hrs',p:{level:'GATE',totalMarks:'100',timeLimit:'180',sections:'2',negMark:true,negVal:'1/3 mark',qtypes:{mcq:{c:55,m:1},numerical:{c:10,m:2}}}},
+  {icon:'🎓',name:'JEE Main Mock',badge:'Competitive',desc:'100 MCQs · 300 marks · 3 hrs · ¼ negative · Physics+Chemistry+Maths',p:{
+    examName:'JEE Main Practice Paper',subject:'Physics, Chemistry & Mathematics',level:'JEE Main',
+    examType:'Mock / Practice Test',totalMarks:'300',timeLimit:'180',sections:'3',
+    negMark:true,negVal:'1/4 mark',answerKey:true,
+    topics:'JEE Main syllabus — Mechanics, Thermodynamics, Optics, Electrochemistry, Organic Chemistry, Calculus, Algebra, Coordinate Geometry',
+    instructions:'Attempt all questions. Each correct answer carries 4 marks. Wrong answer deducts 1 mark. Use of calculators not permitted.',
+    easy:'30',medium:'50',hard:'20',
+    qtypes:{mcq:{c:100,m:4}}}},
+  {icon:'🏥',name:'NEET UG Mock',badge:'Medical',desc:'180 MCQs · 720 marks · 3h 20m · Biology+Physics+Chemistry',p:{
+    examName:'NEET UG Practice Paper',subject:'Biology, Physics & Chemistry',level:'NEET UG',
+    examType:'Mock / Practice Test',totalMarks:'720',timeLimit:'200',sections:'3',
+    negMark:true,negVal:'1/4 mark',answerKey:true,
+    topics:'NEET syllabus — Human Physiology, Cell Biology, Genetics, Plant Biology, Physics (Class 11-12), Chemistry (Organic + Inorganic)',
+    instructions:'180 questions divided equally in 3 sections. Each correct answer: +4 marks. Incorrect: -1 mark.',
+    easy:'30',medium:'50',hard:'20',
+    qtypes:{mcq:{c:180,m:4}}}},
+  {icon:'📘',name:'CBSE Class 12 Board',badge:'School',desc:'MCQ+VSA+SA+LA · 80 marks · 3 hrs · Official CBSE SQP Format',p:{
+    examName:'Class 12 Board Examination',level:'Class 11–12 (Science)',
+    examType:'Final / Annual Exam',totalMarks:'80',timeLimit:'180',sections:'5',
+    negMark:false,answerKey:true,
+    topics:'CBSE Class 12 full syllabus — all units as per latest curriculum',
+    instructions:'Section A: MCQ (1 mk each), Section B: VSA (2 mk), Section C: SA (3 mk), Section D: LA (5 mk), Section E: Case-Based (4 mk). Internal choices given in Sections C, D, E.',
+    easy:'30',medium:'50',hard:'20',
+    qtypes:{mcq:{c:18,m:1},assert:{c:2,m:1},short:{c:7,m:2},long:{c:5,m:3},case:{c:3,m:4},multipart:{c:2,m:5}}}},
+  {icon:'🏛',name:'UPSC Prelims GS-1',badge:'Civil Services',desc:'100 MCQs · 200 marks · 2 hrs · ⅓ negative marking',p:{
+    examName:'UPSC Civil Services Preliminary Examination — GS Paper I',subject:'General Studies',level:'UPSC Prelims',
+    examType:'Competitive Exam',totalMarks:'200',timeLimit:'120',sections:'1',
+    negMark:true,negVal:'1/3 mark',answerKey:true,
+    topics:'Indian History, Geography, Polity & Governance, Economy, Environment & Ecology, Science & Technology, Current Affairs',
+    instructions:'100 questions. Correct answer: +2 marks. Wrong answer: -0.66 marks. Do not guess if unsure.',
+    easy:'35',medium:'45',hard:'20',
+    qtypes:{mcq:{c:100,m:2}}}},
+  {icon:'📊',name:'UG University Exam',badge:'College',desc:'Fill+Short+Long · 75 marks · 3 hrs · UGC Format',p:{
+    examName:'End Semester Examination',level:'Undergraduate Year 2–3',
+    examType:'Final / Annual Exam',totalMarks:'75',timeLimit:'180',sections:'3',
+    negMark:false,answerKey:true,choiceQ:true,
+    instructions:'Attempt all sections. Section A is compulsory. In Sections B and C, internal choice is given.',
+    easy:'30',medium:'45',hard:'25',
+    qtypes:{fitb:{c:5,m:1},oneword:{c:5,m:1},short:{c:5,m:5},long:{c:5,m:10}}}},
+  {icon:'💼',name:'CAT Mock',badge:'MBA',desc:'66 Qs · 198 marks · 2 hrs · QA+VARC+DILR',p:{
+    examName:'CAT Mock Test',subject:'Quantitative Aptitude, Verbal Ability & Reading Comprehension, Data Interpretation & Logical Reasoning',level:'CAT / MBA',
+    examType:'Mock / Practice Test',totalMarks:'198',timeLimit:'120',sections:'3',
+    negMark:true,negVal:'1 mark',answerKey:true,
+    topics:'Quantitative Aptitude (Number Systems, Algebra, Geometry), VARC (RC Passages, Grammar), DILR (Data Tables, Logical Puzzles)',
+    instructions:'Three sections of 40 min each. MCQ: +3 correct, -1 wrong. TITA questions: +3, no negative.',
+    easy:'30',medium:'50',hard:'20',
+    qtypes:{mcq:{c:48,m:3},short:{c:18,m:3}}}},
+  {icon:'🔬',name:'Class 10 Science Test',badge:'School',desc:'MCQ+Short+Long · 30 marks · 90 min · CBSE Pattern',p:{
+    examName:'Unit Test — Science',level:'Class 9–10 (CBSE / State)',
+    examType:'Unit Test / Quiz',totalMarks:'30',timeLimit:'90',sections:'3',
+    negMark:false,answerKey:true,
+    instructions:'All questions are compulsory. Marks for each question are shown in brackets.',
+    easy:'40',medium:'40',hard:'20',
+    qtypes:{mcq:{c:5,m:1},assert:{c:2,m:1},short:{c:5,m:2},long:{c:2,m:5}}}},
+  {icon:'⚡',name:'GATE CSE Mock',badge:'Engineering',desc:'65 Qs · 100 marks · 3 hrs · MCQ+Numerical',p:{
+    examName:'GATE Computer Science Mock Test',subject:'Computer Science & Information Technology',level:'GATE',
+    examType:'Mock / Practice Test',totalMarks:'100',timeLimit:'180',sections:'2',
+    negMark:true,negVal:'1/3 mark',answerKey:true,
+    topics:'Data Structures, Algorithms, OS, DBMS, Computer Networks, Theory of Computation, Digital Logic, Computer Organization, Programming in C',
+    instructions:'General Aptitude: 10 Qs (15 marks). Technical: 55 Qs (85 marks). 1-mark MCQ: -1/3. 2-mark MCQ: -2/3. NAT: no negative.',
+    easy:'25',medium:'50',hard:'25',
+    qtypes:{mcq:{c:55,m:1},numerical:{c:10,m:2}}}},
 ];
 
 // ── QT GRID ──
@@ -1061,20 +1148,67 @@ function buildTemplates() {
 }
 function loadTemplate(i) { loadParams(TEMPLATES[i].p); showView('gen'); showToast('Template loaded: ' + TEMPLATES[i].name, 'ok'); }
 function loadParams(p) {
-  if (p.level) setSel('level', p.level);
-  if (p.examType) setSel('examType', p.examType);
-  if (p.totalMarks) document.getElementById('totalMarks').value = p.totalMarks;
-  if (p.timeLimit) document.getElementById('timeLimit').value = p.timeLimit;
-  if (p.sections) setSel('sections', p.sections);
-  if (p.negMark !== undefined) { document.getElementById('negMark').checked = p.negMark; toggleNeg(); }
-  if (p.negVal) setSel('negVal', p.negVal);
-  ['subject','examName','institution','topics','instructions','refBook'].forEach(function(k) {
-    if (p[k] && document.getElementById(k)) document.getElementById(k).value = p[k];
+  // STEP 1: Reset ALL QT cards to 0 first (so template replaces, not adds)
+  QT.forEach(function(q) {
+    var cnt = document.getElementById('qtcnt-' + q.id);
+    if (cnt) cnt.value = 0;
+    autoSel(q.id);
   });
+
+  // STEP 2: Fill all basic fields
+  if (p.level)      setSel('level', p.level);
+  if (p.examType)   setSel('examType', p.examType);
+  if (p.totalMarks) document.getElementById('totalMarks').value = p.totalMarks;
+  if (p.timeLimit)  document.getElementById('timeLimit').value = p.timeLimit;
+  if (p.sections)   setSel('sections', p.sections);
+  if (p.lang)       setSel('lang', p.lang);
+  if (p.paperSet)   setSel('paperSet', p.paperSet);
+
+  // Negative marking
+  var negEl = document.getElementById('negMark');
+  if (negEl) {
+    negEl.checked = !!p.negMark;
+    toggleNeg();
+    if (p.negVal) setSel('negVal', p.negVal);
+  }
+
+  // Text fields
+  ['subject','examName','institution','topics','instructions','refBook','subjectCode','acadYear'].forEach(function(k) {
+    var el = document.getElementById(k);
+    if (el) el.value = p[k] || '';
+  });
+
+  // Difficulty sliders
+  if (p.easy   !== undefined) { var es = document.getElementById('slEasy');   if(es) es.value = p.easy; }
+  if (p.medium !== undefined) { var ms = document.getElementById('slMedium'); if(ms) ms.value = p.medium; }
+  if (p.hard   !== undefined) { var hs = document.getElementById('slHard');   if(hs) hs.value = p.hard; }
+  try { syncDiff(); } catch(e) {}
+
+  // Toggles
+  ['answerKey','markScheme','bloomsTags','coMapping','wordLimits','choiceQ','negMark'].forEach(function(k) {
+    var el = document.getElementById(k);
+    if (el && p[k] !== undefined) el.checked = !!p[k];
+  });
+
+  // STEP 3: Set QT types from template
   if (p.qtypes) {
-    var arr = Array.isArray(p.qtypes) ? p.qtypes : Object.entries(p.qtypes).map(function(e) { return {id: e[0], count: e[1].c || e[1].count || 0, marks: e[1].m || e[1].marks || 1}; });
+    var arr;
+    if (Array.isArray(p.qtypes)) {
+      arr = p.qtypes;
+    } else {
+      // Object format: {mcq:{c:20,m:1}, short:{c:5,m:2}}
+      arr = Object.keys(p.qtypes).map(function(k) {
+        var v = p.qtypes[k];
+        return { id: k, count: v.c || v.count || 0, marks: v.m || v.marks || 1 };
+      });
+    }
     arr.forEach(function(qt) {
-      var id = qt.id || (QT.find(function(q) { return q.label === qt.type; }) || {}).id;
+      var id = qt.id;
+      if (!id) {
+        // Try to match by label
+        var found = QT.find(function(q) { return q.label === qt.type || q.id === qt.type; });
+        id = found ? found.id : null;
+      }
       if (!id) return;
       var cnt = document.getElementById('qtcnt-' + id);
       var mrk = document.getElementById('qtmrk-' + id);
@@ -1083,6 +1217,10 @@ function loadParams(p) {
       autoSel(id);
     });
   }
+  // Scroll to top so user sees all filled fields, confirm with toast
+  try { var gv=document.getElementById('view-gen'); if(gv) gv.scrollTo({top:0,behavior:'smooth'}); } catch(e){}
+  try { window.scrollTo({top:0,behavior:'smooth'}); } catch(e){}
+  setTimeout(function(){ showToast('✅ Template applied — all fields updated!','ok'); },300);
 }
 function setSel(id, val) {
   var s = document.getElementById(id);
@@ -1142,7 +1280,8 @@ function processFiles(files) {
     var chip = document.createElement('div');
     chip.className = 'chip';
     chip.id = 'chip-' + f.name.replace(/[^a-z0-9]/gi, '_');
-    chip.innerHTML = '📄 ' + f.name + ' <span class="chip-x" onclick="removeFile(\'' + f.name + '\', this)">✕</span>';
+    chip.innerHTML = '📄 ' + f.name + ' <span class="chip-x">✕</span>';
+    chip.querySelector('.chip-x').addEventListener('click',function(){ removeFile(f.name, this); });
     row.appendChild(chip);
 
     // Save file to Supabase Storage
@@ -1248,33 +1387,46 @@ function buildPrompt(p) {
     '\n\nQUESTION TYPES & COUNTS:\n' + (qt || '• MCQ: 20 (1 mark each)\n• Short Answer: 5 (2 marks each)\n• Long Answer: 3 (10 marks each)') +
     '\n\nSPECIAL INSTRUCTIONS:\n' + (p.instructions || 'None') +
     (extras.length ? '\n\nADDITIONAL:\n' + extras.map(function(e) { return '- ' + e; }).join('\n') : '') +
-    '\n\n═════════════════════════════════\nMANDATORY FORMATTING RULES\n═════════════════════════════════\n' +
-    '1. CENTERED PAPER HEADER: Institution / School name on top, then exam name, subject + code, date, time allowed, max marks — styled like official board paper\n' +
-    '2. GENERAL INSTRUCTIONS box: 5-6 numbered realistic exam instructions (compulsory questions, roll number, use of calculators etc.)\n' +
-    '3. Sections clearly labeled SECTION A, SECTION B etc with question type and per-question marks stated\n' +
-    '4. Questions numbered Q1, Q2... sub-parts as (a)(b)(c)\n5. MCQ options each on own line: (a) ... (b) ... (c) ... (d) ...\n' +
-    '6. Marks shown as [1 Mark] or [2 Marks] at end of each question\n7. Decorative dividers ────────────── between sections\n' +
-    '8. Footer: *** END OF QUESTION PAPER ***\n9. All questions must be genuine, curriculum-appropriate, and educationally valid\n10. Use the exact official paper format for the specified education level and exam type\n' +
-    (p.answerKey ? '11. After all questions, add: ════════════════ [ANSWER KEY — SEPARATE PAGE] ════════════════ then list all answers clearly. Answer key MUST be completely separate from question paper.\n' : '11. Do NOT include any answers.\n') +
-    '\n\nGenerate the full, complete, untruncated question paper now:';
+    '\n\nFORMAT INTELLIGENCE — Pick the EXACT official format for this exam type:\n' +
+    '• JEE/NEET/NTA/CUET → NTA Official Booklet Style: 4-option MCQs, Subjects as separate sections, No sub-parts in questions, Question booklet format\n' +
+    '• CBSE Board (Class 10-12) → Latest CBSE SQP Format: Section-A (MCQ+AR 1mk), Section-B (VSA 2mk), Section-C (SA 3mk), Section-D (LA 5mk), Section-E (Case/Map 4mk), internal choice in C/D/E\n' +
+    '• State Board Exams → Respective state board SQP format with official section divisions\n' +
+    '• UPSC/MPSC/PSC → GS Paper style: One section, 100 MCQs, question serial numbering, minimal decoration\n' +
+    '• University/College → UGC-compliant: Part A (objective), Part B (short), Part C (long), internal choice\n' +
+    '• GATE → Two-part (General Aptitude + Technical), MCQ + NAT questions clearly marked\n' +
+    '• School Unit Test → Simple 2-3 section format appropriate for age group\n' +
+    '\n\n═════════════════════════════════════════════\nMANDATORY LAYOUT — OFFICIAL BOARD STYLE\n═════════════════════════════════════════════\n' +
+    '1. TOP HEADER — centered, professional:\n' +
+    '   ════════════════════════════════════════════════════════\n' +
+    '   [INSTITUTION NAME — all caps, centered]\n' +
+    '   [Exam Name] | [Subject] | [Date]\n' +
+    '   Time Allowed: [X hrs]        Maximum Marks: [X]\n' +
+    '   ════════════════════════════════════════════════════════\n\n' +
+    '2. GENERAL INSTRUCTIONS section: exactly 6 numbered instructions (official exam language)\n' +
+    '3. Each SECTION HEADER: bold, caps, describes question type + marks per Q + section total marks\n' +
+    '4. Questions: Q1, Q2, Q3... sequential throughout. Sub-parts as (i)(ii)(iii) or (a)(b)(c)\n' +
+    '5. MCQ options: each on its own line — (a) ... [newline] (b) ... [newline] (c) ... [newline] (d)\n' +
+    '6. Marks: shown as [1 Mark] or [2 Marks] right-aligned at end of EVERY question\n' +
+    '7. Section dividers: ══════════════════════════════ between each section\n' +
+    '8. Paper ends with: ════ *** END OF QUESTION PAPER *** ════\n' +
+    '9. All questions: factually accurate, curriculum-correct, properly worded, educationally valid\n' +
+    '10. Difficulty: ' + p.easy + '% Easy questions, ' + p.medium + '% Medium, ' + p.hard + '% Hard — distribute across sections\n' +
+    (p.answerKey ?
+      '11. ANSWER KEY — NEW SEPARATE PAGE (MANDATORY): After "END OF QUESTION PAPER", add this EXACT block:\n' +
+      '    ════════════════════════════════════════════════════════\n' +
+      '    ANSWER KEY / SOLUTIONS\n' +
+      '    ════════════════════════════════════════════════════════\n' +
+      '    List: Q1.(b)  Q2.True  Q3.(Short answer model solution)  etc.\n' +
+      '    Answer key MUST be on its own page, NOT mixed into question paper.\n'
+      : '11. Do NOT include any answers anywhere in the question paper.\n') +
+    '\nGenerate the FULL, COMPLETE, UNTRUNCATED question paper — do NOT stop midway:';
 }
 
 // ── API KEYS ──
-function getKey(provider) { return localStorage.getItem('questrix_key_' + provider) || ''; }
-function saveKey(provider) {
-  var inp = document.getElementById('key' + provider.charAt(0).toUpperCase() + provider.slice(1));
-  var val = inp.value.trim();
-  if (!val) { showToast('Key cannot be empty', 'err'); return; }
-  localStorage.setItem('questrix_key_' + provider, val);
-  inp.value = ''; inp.placeholder = '●●●●●● (saved)';
-  updateDots();
-  showToast(provider === 'gemini' ? 'Gemini key saved ✓' : 'Groq key saved ✓', 'ok');
-}
-function initKeys() {
-  // API key inputs removed from UI — keys handled server-side
-  // This function kept for backwards compatibility only
-  updateDots();
-}
+// API keys are managed server-side — no user interaction needed
+function getKey(p) { return ''; }
+function saveKey(p) {}
+function initKeys() {}
 function updateDots() {
   // Dots removed from UI — no-op
 }
@@ -1301,33 +1453,29 @@ async function generate() {
   var result = '', model = '';
 
   try {
-    // Try serverless function first (keys hidden server-side)
-    document.getElementById('aiTag').textContent = '● Questrix AI';
+    document.getElementById('aiTag').textContent = '● Gemini 1.5 Flash';
     var aiRes = await callAI(prompt);
-    result = aiRes.result; model = aiRes.model;
+    result = aiRes.result;
+    model = aiRes.model;
+    document.getElementById('aiTag').textContent = '● ' + model;
   } catch(e) {
-    // Fallback to user's own keys if serverless fails
-    try {
-      document.getElementById('aiTag').textContent = '● Gemini 1.5 Flash';
-      var aiRes2 = await callGemini(prompt);
-      result = aiRes2.result; model = aiRes2.model;
-    } catch(e2) {
-      try {
-        document.getElementById('aiTag').textContent = '● Groq LLaMA 3.3 70B';
-        var aiRes3 = await callGroq(prompt);
-        result = aiRes3.result; model = aiRes3.model;
-      } catch(e3) {
-        clearInterval(tick);
-        document.getElementById('progressWrap').classList.remove('on');
-        document.getElementById('genBtn').disabled = false;
-        var msg = e3.message || 'Generation failed';
-        if (msg.includes('401') || msg.includes('API_KEY') || msg.includes('invalid')) msg = 'API key invalid. Please contact support.';
-        else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate') || msg.includes('TPM') || msg.includes('too large')) msg = 'Too many requests — please wait 60 seconds and try again.';
-        else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) msg = 'Network error — check your internet connection.';
-        showToast('❌ ' + msg, 'err');
-        return;
-      }
+    clearInterval(tick);
+    document.getElementById('progressWrap').classList.remove('on');
+    document.getElementById('genBtn').disabled = false;
+    var msg = e.message || 'Generation failed';
+    if (msg === 'NO_KEY') {
+      showToast('❌ AI service unavailable. Please try again in a moment.', 'err');
+      
+    } else if (msg.includes('401') || msg.includes('invalid') || msg.toLowerCase().includes('api key')) {
+      showToast('❌ Generation failed. Please try again.', 'err');
+    } else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate')) {
+      showToast('⏳ AI service is busy — please retry in a moment.', 'err');
+    } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) {
+      showToast('❌ Network error — check your internet connection.', 'err');
+    } else {
+      showToast('❌ ' + msg, 'err');
     }
+    return;
   }
 
   clearInterval(tick);
@@ -1335,91 +1483,410 @@ async function generate() {
   document.getElementById('genBtn').disabled = false;
   lastGenText = result;
 
-  document.getElementById('paperBox').textContent = result;
-  var qc = p.qtypes.reduce(function(a, q) { return a + q.count; }, 0);
+  lastGenText = result;
+  renderPaper(result, model, p);
+}
+
+function renderPaper(text, model, p) {
+  lastGenText = text;
+  // Render with HTML formatting for professional look
+  var box = document.getElementById('paperBox');
+  box.innerHTML = formatPaperHTML(text);
+  box.contentEditable = 'true';
+  box.spellcheck = false;
+  // Show edit mode hint once
+  if (!localStorage.getItem('sb_edit_hint')) {
+    localStorage.setItem('sb_edit_hint', '1');
+    showToast('✏️ Paper is editable — click any text to edit directly!', 'ok');
+  }
+  var qc = p ? p.qtypes.reduce(function(a, q) { return a + q.count; }, 0) : 0;
   document.getElementById('outMeta').innerHTML =
     '<span class="meta-tag">🤖 ' + model + '</span>' +
-    '<span class="meta-tag">📄 ' + (p.subject || '—') + '</span>' +
-    '<span class="meta-tag">🎯 ' + p.totalMarks + ' marks</span>' +
+    '<span class="meta-tag">📄 ' + (p ? p.subject || '—' : '—') + '</span>' +
+    (p ? '<span class="meta-tag">🎯 ' + p.totalMarks + ' marks</span>' +
     '<span class="meta-tag">⏱ ' + p.timeLimit + ' min</span>' +
-    '<span class="meta-tag">❓ ' + qc + ' questions</span>';
+    '<span class="meta-tag">❓ ' + qc + ' questions</span>' : '') +
+    '<span class="meta-tag" style="color:var(--gold)">✏️ Click to edit</span>';
   document.getElementById('outWrap').classList.add('on');
   setTimeout(function() { document.getElementById('outWrap').scrollIntoView({behavior:'smooth',block:'start'}); }, 100);
-  showToast('Paper generated!', 'ok');
-  if (getPrefs().autosave) saveToHistory(p, result, model);
-  incStat('papers');
+  showToast('✅ Paper generated! Click any text to edit.', 'ok');
+  if (p && getPrefs().autosave) saveToHistory(p, text, model);
+  if (p) incStat('papers');
 }
 
-// ── SERVERLESS API CALL (keys hidden server-side) ──
-async function callAI(prompt) {
-  var res = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt: prompt })
-  });
-  if (!res.ok) {
-    var err = await res.json().catch(function() { return {}; });
-    throw new Error(err.error || 'Generation failed (HTTP ' + res.status + ')');
+// Format plain-text paper into styled HTML for display
+function formatPaperHTML(text) {
+  var lines = text.split('
+');
+  var html = '';
+  var inHeader = true;
+  var hCount = 0;
+
+  for (var i=0; i<lines.length; i++) {
+    var line = lines[i];
+    var l = line.trim();
+    var esc = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var lesc = l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    if (!l) { html += '<div style="height:7px"></div>'; continue; }
+
+    // Thick dividers
+    if (/^[═]{4,}/.test(l)) { html += '<hr style="border:none;border-top:2px solid #b09a50;margin:10px 0">'; continue; }
+    if (/^[─]{4,}/.test(l)) { html += '<hr style="border:none;border-top:1px solid #d0c8b0;margin:6px 0">'; continue; }
+
+    // END OF PAPER
+    if (/END OF QUESTION PAPER/i.test(l)) {
+      inHeader=false;
+      html += '<div style="text-align:center;font-weight:bold;border:1.5px solid #b09a50;padding:8px 20px;margin:16px 0;border-radius:4px;color:#5a4a20;font-size:13px">' + lesc + '</div>';
+      continue;
+    }
+
+    // ANSWER KEY
+    if (/ANSWER KEY/i.test(l) && l.replace(/[═─s]/g,'').length < 30) {
+      inHeader=false;
+      html += '<div style="margin-top:28px;padding:10px 0 8px;text-align:center;font-size:15px;font-weight:900;color:#8a6c10;letter-spacing:0.05em;border-top:2px solid #b09a50">' + lesc + '</div>';
+      continue;
+    }
+
+    // Header block (institution, exam name, etc)
+    if (inHeader && hCount < 10 && !/^Qd+./.test(l) && !/^SECTION/i.test(l) && !/^GENERAL INSTRUCTIONS/i.test(l)) {
+      var fs2 = hCount===0 ? '17px' : hCount<3 ? '13px' : '11px';
+      var fw2 = hCount<3 ? '800' : '500';
+      html += '<div style="text-align:center;font-size:' + fs2 + ';font-weight:' + fw2 + ';line-height:1.6;color:#1a1a1a;margin-bottom:2px">' + lesc + '</div>';
+      hCount++;
+      continue;
+    }
+    inHeader=false;
+
+    // SECTION headings
+    if (/^SECTION [A-Z]/i.test(l)) {
+      html += '<div style="background:#1e3a22;color:#f0c040;font-weight:800;font-size:12.5px;padding:7px 14px;border-radius:5px;margin:18px 0 9px;letter-spacing:0.07em;text-transform:uppercase">' + lesc + '</div>';
+      continue;
+    }
+
+    // GENERAL INSTRUCTIONS
+    if (/GENERAL INSTRUCTIONS/i.test(l) || /INSTRUCTIONS TO CANDIDATES/i.test(l)) {
+      html += '<div style="font-weight:800;font-size:12px;color:#2a6a40;margin:14px 0 5px;text-decoration:underline;text-underline-offset:3px">' + lesc + '</div>';
+      continue;
+    }
+
+    // Questions Q1. Q2.
+    if (/^Qd+./.test(l)) {
+      var marks='', qtext=lesc;
+      var mm=lesc.match(/[([d.]+ ?[Mm]arks?)]/);
+      if(mm){marks='<span style="float:right;font-size:11px;color:#666;font-weight:500">' + mm[1] + '</span>';qtext=lesc.replace(mm[0],'').trim();}
+      html += '<div style="font-weight:700;font-size:13px;margin-top:13px;margin-bottom:4px;line-height:1.7">' + marks + qtext + '</div>';
+      continue;
+    }
+
+    // MCQ options
+    if (/^([a-d])|^[a-d])/.test(l)) {
+      html += '<div style="padding-left:24px;font-size:12.5px;line-height:1.9;color:#333">' + esc + '</div>';
+      continue;
+    }
+
+    // Numbered instructions
+    if (/^d+.s/.test(l) && hCount<25) {
+      html += '<div style="padding-left:16px;font-size:12px;line-height:1.9;color:#444">' + esc + '</div>';
+      continue;
+    }
+
+    // Default
+    html += '<div style="font-size:12.5px;line-height:1.95;color:#2a2a2a">' + esc + '</div>';
   }
-  var data = await res.json();
-  if (!data.result) throw new Error('Empty response from AI');
-  return { result: data.result, model: data.model || 'Questrix AI' };
+  return html;
 }
 
-// Keep these as fallbacks if serverless not set up yet
-async function callGemini(prompt) {
-  var key = getKey('gemini');
-  if (!key) throw new Error('No Gemini key');
-  var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + key, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 8192, temperature: 0.7 } })
-  });
-  if (!res.ok) { var err = await res.json().catch(function() { return {}; }); throw new Error(err.error ? err.error.message : 'Gemini HTTP ' + res.status); }
-  var data = await res.json();
-  var text = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] ? data.candidates[0].content.parts[0].text : '';
-  if (!text) throw new Error('Empty response from Gemini');
-  return { result: text, model: 'Gemini 1.5 Flash' };
+// ══ AI ENGINE — Direct calls, Gemini first ══
+// ═══ AI ENGINE — Keys are server-side only (Vercel env vars) ═══
+// Users NEVER see or touch API keys. All calls go through /api/generate.
+async function callAI(prompt) {
+  // Trim very large prompts to avoid hitting server limits
+  var safePrompt = prompt.length > 45000 ? prompt.substring(0, 45000) + '
+
+[Source content trimmed. Generate complete paper from above specs.]' : prompt;
+
+  var controller = new AbortController();
+  var timeoutId = setTimeout(function() { controller.abort(); }, 55000); // 55s timeout
+
+  try {
+    var res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: safePrompt }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      var errData = await res.json().catch(function() { return {}; });
+      throw new Error(errData.error || 'Server error ' + res.status);
+    }
+    var data = await res.json();
+    if (!data.result) throw new Error('Empty response from server');
+    return { result: data.result, model: data.model || 'Smart Buddy AI' };
+
+  } catch(e) {
+    clearTimeout(timeoutId);
+    if (e.name === 'AbortError') throw new Error('Generation timed out. Please try again.');
+    throw e;
+  }
 }
 
-async function callGroq(prompt) {
-  var key = getKey('groq');
-  if (!key) throw new Error('No Groq key');
-  var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-    body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: prompt }], max_tokens: 8192, temperature: 0.7 })
-  });
-  if (!res.ok) { var err = await res.json().catch(function() { return {}; }); throw new Error(err.error ? err.error.message : 'Groq HTTP ' + res.status); }
-  var data = await res.json();
-  var text = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '';
-  if (!text) throw new Error('Empty response from Groq');
-  return { result: text, model: 'Groq LLaMA 3.3 70B' };
-}
+// Legacy stubs — kept so nothing breaks if called elsewhere
+function getKey(p) { return ''; }
+function _doGemini() { return Promise.reject(new Error('Use callAI instead')); }
+function _doGroq() { return Promise.reject(new Error('Use callAI instead')); }
 
 // ── OUTPUT ──
 async function dlPDF() {
-  if (!lastGenText) { showToast('No paper to download', 'err'); return; }
+  var box = document.getElementById('paperBox');
+  var editedText = box ? (box.innerText || box.textContent || lastGenText) : lastGenText;
+  if (!editedText || !editedText.trim()) { showToast('No paper to download', 'err'); return; }
   try {
     var jsPDF = window.jspdf.jsPDF;
-    var doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
-    var mL = 18, mT = 20, mB = 18, lh = 5.8, mxW = 210 - mL * 2; var y = mT;
-    var lines = doc.splitTextToSize(lastGenText, mxW);
-    for (var i = 0; i < lines.length; i++) {
-      if (y + lh > 297 - mB) { doc.addPage(); y = mT; }
-      var l = lines[i];
-      var bold = /^(═+|─+|Section|SECTION|ANSWER KEY|GENERAL|Q\d+\.|Part|PART)/.test(l.trim());
-      doc.setFont('helvetica', bold ? 'bold' : 'normal');
-      doc.setFontSize(bold ? 10.5 : 10);
-      doc.text(l, mL, y); y += lh;
+    var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    var PW = 210, PH = 297;
+    var mL = 20, mR = 20, mT = 20, mB = 18;
+    var CW = PW - mL - mR;
+    var y = mT;
+
+    function checkPage(need) {
+      if (y + need > PH - mB) { doc.addPage(); y = mT; return true; }
+      return false;
     }
-    doc.save((v('examName') || 'QuestionPaper').replace(/\s+/g, '_') + '.pdf');
-    showToast('PDF downloaded!', 'ok');
+    function hLine(yy, color) {
+      color = color || [160,140,80];
+      doc.setDrawColor(color[0],color[1],color[2]);
+      doc.setLineWidth(0.3);
+      doc.line(mL, yy, PW-mR, yy);
+    }
+
+    var lines = editedText.split('
+');
+    var inHeader = true;
+    var headerLines = [];
+    var headerEnd = 0;
+
+    // Pass 1: collect header lines (institution, exam name, date, marks, time)
+    for (var i=0; i<Math.min(lines.length,14); i++) {
+      var l = lines[i].trim();
+      if (!l) continue;
+      if (/^[═─]{5,}/.test(l)) { headerEnd=i; break; }
+      if (/^Qd+./.test(l) || /^SECTION [A-Z]/i.test(l) || /^GENERAL INSTRUCTIONS/i.test(l)) { headerEnd=i; break; }
+      headerLines.push(l);
+      headerEnd=i+1;
+    }
+
+    // Draw header block
+    // Background bar
+    doc.setFillColor(15,35,20);
+    doc.rect(0, 0, PW, 12, 'F');
+    y = 8;
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(200,170,70);
+    doc.text('QUESTRIX — AI GENERATED QUESTION PAPER', PW/2, y, {align:'center'});
+    y = mT;
+
+    // Institution (line 0) — large bold centered
+    if (headerLines.length > 0) {
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(14);
+      doc.setTextColor(20,20,20);
+      var inst = doc.splitTextToSize(headerLines[0], CW);
+      inst.forEach(function(ln){ doc.text(ln, PW/2, y, {align:'center'}); y+=6.5; });
+    }
+    // Exam name (line 1)
+    if (headerLines.length > 1) {
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(11);
+      doc.setTextColor(40,40,40);
+      doc.text(headerLines[1], PW/2, y, {align:'center'}); y+=5.5;
+    }
+    // Subject (line 2)
+    if (headerLines.length > 2) {
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(10);
+      doc.setTextColor(60,60,60);
+      doc.text(headerLines[2], PW/2, y, {align:'center'}); y+=5;
+    }
+    // Remaining header lines (date, time, marks) — two-column layout
+    y += 2;
+    hLine(y, [100,90,50]); y+=3;
+    var metaLines = headerLines.slice(3);
+    for (var mi=0; mi<metaLines.length; mi+=2) {
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(30,30,30);
+      doc.text(metaLines[mi], mL, y);
+      if (metaLines[mi+1]) doc.text(metaLines[mi+1], PW-mR, y, {align:'right'});
+      y += 5;
+    }
+    hLine(y, [100,90,50]); y+=5;
+
+    // Pass 2: render body
+    for (var i=headerEnd; i<lines.length; i++) {
+      var raw = lines[i];
+      var l = raw.trim();
+
+      if (!l) { y += 2.5; continue; }
+
+      // Thick dividers — skip, use spacing
+      if (/^[═]{4,}/.test(l) || /^[─]{4,}/.test(l)) { y+=1; continue; }
+
+      // ANSWER KEY — new page
+      if (/ANSWER KEY/i.test(l) && l.replace(/[═─s]/g,'').length < 25) {
+        doc.addPage(); y=mT;
+        doc.setFillColor(20,50,25);
+        doc.rect(mL-2, y-4, CW+4, 10, 'F');
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(11);
+        doc.setTextColor(220,180,60);
+        doc.text('ANSWER KEY / SOLUTIONS', PW/2, y+2, {align:'center'});
+        doc.setTextColor(30,30,30);
+        y += 12;
+        continue;
+      }
+
+      // END OF PAPER
+      if (/END OF QUESTION PAPER/i.test(l)) {
+        checkPage(16);
+        y += 6;
+        hLine(y); y+=4;
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(10);
+        doc.setTextColor(80,80,80);
+        doc.text('* * *   END OF QUESTION PAPER   * * *', PW/2, y, {align:'center'});
+        hLine(y+4); y+=10;
+        doc.setTextColor(30,30,30);
+        continue;
+      }
+
+      // SECTION heading
+      if (/^SECTION [A-Z]/i.test(l)) {
+        checkPage(14);
+        y += 4;
+        doc.setFillColor(20,50,25);
+        doc.roundedRect(mL-2, y-4, CW+4, 9, 1.5, 1.5, 'F');
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(10);
+        doc.setTextColor(220,185,65);
+        doc.text(l.toUpperCase(), mL+2, y+2);
+        doc.setTextColor(30,30,30);
+        y += 12;
+        continue;
+      }
+
+      // GENERAL INSTRUCTIONS heading
+      if (/GENERAL INSTRUCTIONS/i.test(l) || /INSTRUCTIONS TO CANDIDATES/i.test(l)) {
+        checkPage(10);
+        y += 3;
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(10);
+        doc.setTextColor(50,100,70);
+        doc.text(l, mL, y);
+        doc.setTextColor(30,30,30);
+        y += 7;
+        continue;
+      }
+
+      // Question number Q1. Q2. etc
+      if (/^Qd+./.test(l)) {
+        checkPage(12);
+        y += 3;
+        // Parse marks tag [X Mark] [X Marks] at end
+        var marksTag = '';
+        var qText = l;
+        var mMatch = l.match(/[(d+.?d*s*[Mm]arks?)]/);
+        if (mMatch) { marksTag = mMatch[0]; qText = l.replace(mMatch[0],'').trim(); }
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(10.5);
+        var qLines = doc.splitTextToSize(qText, marksTag ? CW-22 : CW);
+        qLines.forEach(function(ql,qi){
+          checkPage(7);
+          doc.text(ql, mL, y);
+          if(qi===0 && marksTag){
+            doc.setFont('helvetica','normal');
+            doc.setFontSize(9);
+            doc.setTextColor(100,100,100);
+            doc.text(marksTag, PW-mR, y, {align:'right'});
+            doc.setTextColor(30,30,30);
+            doc.setFont('helvetica','bold');
+            doc.setFontSize(10.5);
+          }
+          y+=6;
+        });
+        continue;
+      }
+
+      // MCQ options (a) (b) (c) (d)
+      if (/^([a-d])|^[a-d])/.test(l)) {
+        checkPage(7);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(10);
+        doc.setTextColor(40,40,40);
+        var oLines = doc.splitTextToSize(raw, CW-10);
+        oLines.forEach(function(ol){ checkPage(6); doc.text(ol, mL+10, y); y+=5.5; });
+        doc.setTextColor(30,30,30);
+        continue;
+      }
+
+      // Sub-question (i) (ii) (iii) or (a)(b) for essay
+      if (/^s*([ivxIVXa-c]+)/.test(raw)) {
+        checkPage(7);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(10);
+        var sLines = doc.splitTextToSize(raw.trim(), CW-8);
+        sLines.forEach(function(sl){ checkPage(6); doc.text(sl, mL+8, y); y+=5.5; });
+        continue;
+      }
+
+      // Answer key entries Q1.(b) style
+      if (/^Qd+.(/.test(l) || /^d+.s+(/.test(l) || /^Qd+.s+[A-D]/.test(l)) {
+        checkPage(6);
+        doc.setFont('courier','normal');
+        doc.setFontSize(9.5);
+        var akLines = doc.splitTextToSize(l, CW/2);
+        akLines.forEach(function(al){ checkPage(6); doc.text(al, mL+4, y); y+=5; });
+        doc.setFont('helvetica','normal');
+        continue;
+      }
+
+      // Default body text
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(10);
+      doc.setTextColor(30,30,30);
+      var dLines = doc.splitTextToSize(raw, CW);
+      dLines.forEach(function(dl){ checkPage(6); doc.text(dl, mL, y); y+=5.5; });
+    }
+
+    // Footer on all pages
+    var total = doc.getNumberOfPages();
+    for (var pg=1; pg<=total; pg++) {
+      doc.setPage(pg);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(160,160,160);
+      hLine(PH-mB+2, [200,200,200]);
+      doc.text('Generated by Questrix', mL, PH-mB+6);
+      doc.text('Page ' + pg + ' of ' + total, PW-mR, PH-mB+6, {align:'right'});
+      doc.setTextColor(30,30,30);
+    }
+
+    var fname = (document.getElementById('examName') ? document.getElementById('examName').value : '') || 'QuestionPaper';
+    doc.save(fname.replace(/[^a-z0-9]/gi,'_') + '.pdf');
+    showToast('✅ Professional PDF downloaded!', 'ok');
+    lastGenText = editedText;
   } catch(e) { showToast('PDF error: ' + e.message, 'err'); }
 }
+
 function dlTXT() {
-  if (!lastGenText) { showToast('No paper', 'err'); return; }
-  var b = new Blob([lastGenText], {type: 'text/plain'});
+  var box = document.getElementById('paperBox');
+  var text = box ? (box.innerText || box.textContent || lastGenText) : lastGenText;
+  if (!text || !text.trim()) { showToast('No paper', 'err'); return; }
+  lastGenText = text; // sync edits
+  var b = new Blob([text], {type: 'text/plain'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(b);
   a.download = (v('examName') || 'Paper').replace(/\s+/g, '_') + '.txt';
@@ -1428,8 +1895,34 @@ function dlTXT() {
   showToast('TXT downloaded!', 'ok');
 }
 function copyTxt() {
-  if (!lastGenText) return;
-  navigator.clipboard.writeText(lastGenText).then(function() { showToast('Copied!', 'ok'); });
+  var box = document.getElementById('paperBox');
+  var text = box ? (box.innerText || box.textContent || lastGenText) : lastGenText;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(function() { showToast('Copied!', 'ok'); });
+}
+
+var _editMode = false;
+function toggleEditMode() {
+  var box = document.getElementById('paperBox');
+  var btn = document.getElementById('editToggleBtn');
+  var hint = document.getElementById('editHint');
+  if (!box) return;
+  _editMode = !_editMode;
+  box.contentEditable = _editMode ? 'true' : 'false';
+  if (btn) {
+    btn.textContent = _editMode ? '✅ Done Editing' : '✏️ Edit';
+    btn.style.color = _editMode ? 'var(--sage)' : 'var(--gold)';
+    btn.style.borderColor = _editMode ? 'var(--sage)' : 'var(--gold)';
+  }
+  if (hint) hint.style.display = _editMode ? 'block' : 'none';
+  if (_editMode) {
+    box.focus();
+    showToast('✏️ Edit mode — click text to edit', 'ok');
+  } else {
+    // Save edits to lastGenText
+    lastGenText = box.innerText || box.textContent || lastGenText;
+    showToast('✅ Edits saved — ready to download', 'ok');
+  }
 }
 function printPaper() {
   if (!lastGenText) return;
@@ -1503,7 +1996,9 @@ function viewPaper(id) {
   var e = (window._papers || []).find(function(p) { return p.id === id; });
   if (!e) return;
   lastGenText = e.content;
-  document.getElementById('paperBox').textContent = e.content;
+  var histP = {subject: e.subject||'', totalMarks: e.total_marks||'', timeLimit: e.time_limit||'', qtypes:[{count:0}]};
+  renderPaper(e.content||'', e.model||'Saved', histP);
+  // override the meta line below
   document.getElementById('outMeta').innerHTML = '<span class="meta-tag">📄 ' + (e.subject || '') + '</span><span class="meta-tag">📅 ' + new Date(e.created_at).toLocaleString() + '</span>';
   document.getElementById('outWrap').classList.add('on');
   showView('gen');

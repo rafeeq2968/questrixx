@@ -1,29 +1,36 @@
-// Vercel Serverless Function — /api/generate
-// API keys are stored as Vercel Environment Variables (never exposed to browser)
+// ═══════════════════════════════════════════════════════════════════
+// Smart Buddy — Vercel Serverless Function
+// File: /api/generate.js
+//
+// API keys are stored as Vercel Environment Variables.
+// They are NEVER sent to the browser. Users cannot see or change them.
+//
+// HOW TO SET KEYS ON VERCEL (one-time setup):
+//   1. Go to vercel.com → Your Project → Settings → Environment Variables
+//   2. Add:  GEMINI_API_KEY  = your key from aistudio.google.com/app/apikey
+//   3. Add:  GROQ_API_KEY    = your key from console.groq.com/keys
+//   4. Click Save → Redeploy
+// ═══════════════════════════════════════════════════════════════════
 
 export default async function handler(req, res) {
-  // Only allow POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  const { prompt } = req.body;
-  if (!prompt || typeof prompt !== 'string') {
-    return res.status(400).json({ error: 'Missing prompt' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Limit prompt size to prevent abuse
-  if (prompt.length > 50000) {
-    return res.status(400).json({ error: 'Prompt too long' });
-  }
+  const { prompt } = req.body || {};
+  if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: 'Missing prompt' });
+  if (prompt.length > 50000) return res.status(400).json({ error: 'Prompt too long' });
 
   const GEMINI_KEY = process.env.GEMINI_API_KEY;
-  const GROQ_KEY = process.env.GROQ_API_KEY;
+  const GROQ_KEY   = process.env.GROQ_API_KEY;
 
-  // Try Gemini first
+  // ─── Try Gemini first (best quality) ────────────────────────────
   if (GEMINI_KEY) {
     try {
-      const geminiRes = await fetch(
+      const r = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
         {
           method: 'POST',
@@ -34,51 +41,46 @@ export default async function handler(req, res) {
           })
         }
       );
-
-      if (geminiRes.ok) {
-        const data = await geminiRes.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          return res.status(200).json({ result: text, model: 'Gemini 1.5 Flash' });
-        }
+      if (r.ok) {
+        const d = await r.json();
+        const text = d?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) return res.status(200).json({ result: text, model: 'Gemini 1.5 Flash' });
       }
+      const eb = await r.json().catch(() => ({}));
+      console.warn('Gemini failed:', eb?.error?.message || r.status, '— trying Groq');
     } catch (e) {
-      console.error('Gemini error:', e.message);
+      console.warn('Gemini exception:', e.message, '— trying Groq');
     }
   }
 
-  // Fallback to Groq
+  // ─── Fallback to Groq (auto-backup) ─────────────────────────────
   if (GROQ_KEY) {
     try {
-      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      const p = prompt.length > 16000
+        ? prompt.substring(0, 16000) + '\n\n[Trimmed. Generate complete paper from above specifications.]'
+        : prompt;
+
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${GROQ_KEY}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
-          messages: [{ role: 'user', content: prompt }],
+          messages: [{ role: 'user', content: p }],
           max_tokens: 8000,
           temperature: 0.7
         })
       });
-
-      if (groqRes.ok) {
-        const data = await groqRes.json();
-        const text = data?.choices?.[0]?.message?.content;
-        if (text) {
-          return res.status(200).json({ result: text, model: 'Smart Buddy AI' });
-        }
-      } else {
-        const err = await groqRes.json().catch(() => ({}));
-        throw new Error(err?.error?.message || `Groq HTTP ${groqRes.status}`);
+      if (r.ok) {
+        const d = await r.json();
+        const text = d?.choices?.[0]?.message?.content;
+        if (text) return res.status(200).json({ result: text, model: 'Smart Buddy AI' });
       }
+      const eb = await r.json().catch(() => ({}));
+      return res.status(500).json({ error: eb?.error?.message || 'Groq failed' });
     } catch (e) {
-      console.error('Groq error:', e.message);
-      return res.status(500).json({ error: e.message || 'AI generation failed' });
+      return res.status(500).json({ error: e.message });
     }
   }
 
-  return res.status(500).json({ error: 'No AI service available. Please try again.' });
+  return res.status(500).json({ error: 'AI service not configured. Contact support.' });
 }
