@@ -1617,7 +1617,7 @@ async function generate() {
   if (p.mode === 'byoc' && !uploadedText && !v('pasteContent').trim()) { showToast('Please upload or paste your source content', 'err'); return; }
   // No API key needed — using built-in serverless function
 
-  document.getElementById('genBtn').disabled = true;
+  // genBtn stays enabled — user can regenerate instantly
   document.getElementById('outWrap').classList.remove('on');
   document.getElementById('progressWrap').classList.add('on');
 
@@ -1640,6 +1640,7 @@ async function generate() {
     document.getElementById('progressWrap').classList.remove('on');
     document.getElementById('genBtn').disabled = false;
     var msg = e.message || 'Generation failed';
+    if (msg === '__CANCELLED__') return; // user started a new generation — no error shown
     if (msg.includes('not configured') || msg.includes('Contact support') || msg === 'NO_KEY') {
       showToast('⚠️ Generation failed: API keys not set on Vercel. Go to Vercel → Settings → Environment Variables and add GEMINI_API_KEY + GROQ_API_KEY, then Redeploy.', 'err');
     } else if (msg.includes('401') || msg.includes('invalid') || msg.toLowerCase().includes('api key')) {
@@ -1773,22 +1774,26 @@ function formatPaperHTML(text) {
 // ══ AI ENGINE — Direct calls, Gemini first ══
 // ═══ AI ENGINE — Keys are server-side only (Vercel env vars) ═══
 // Users NEVER see or touch API keys. All calls go through /api/generate.
+// Holds the AbortController for any in-flight request so a new generate() can cancel it instantly
+var _activeController = null;
+
 async function callAI(prompt) {
-  // Trim very large prompts to avoid hitting server limits
+  // Cancel any previous in-flight request immediately
+  if (_activeController) {
+    try { _activeController.abort(); } catch(x) {}
+  }
+
   var safePrompt = prompt.length > 45000 ? prompt.substring(0, 45000) + '\n\n[Source content trimmed. Generate complete paper from above specs.]' : prompt;
 
-  var controller = new AbortController();
-  var timeoutId = setTimeout(function() { controller.abort(); }, 55000); // 55s timeout
-
-  try {
+  async function attempt() {
+    var ctrl = new AbortController();
+    _activeController = ctrl;
     var res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: safePrompt }),
-      signal: controller.signal
+      signal: ctrl.signal
     });
-    clearTimeout(timeoutId);
-
     if (!res.ok) {
       var errData = await res.json().catch(function() { return {}; });
       throw new Error(errData.error || 'Server error ' + res.status);
@@ -1796,10 +1801,24 @@ async function callAI(prompt) {
     var data = await res.json();
     if (!data.result) throw new Error('Empty response from server');
     return { result: data.result, model: data.model || 'Questrix AI' };
+  }
 
+  try {
+    return await attempt();
   } catch(e) {
-    clearTimeout(timeoutId);
-    if (e.name === 'AbortError') throw new Error('Generation timed out. Please try again.');
+    // If this was cancelled because user started a NEW generation — just stop silently
+    if (e.name === 'AbortError') {
+      throw new Error('__CANCELLED__');
+    }
+    // On any network/timeout error — retry once automatically, no error shown to user
+    if (e.message && (e.message.includes('network') || e.message.includes('fetch') || e.message.includes('Failed') || e.message.includes('timeout') || e.message.includes('500'))) {
+      try {
+        return await attempt();
+      } catch(e2) {
+        if (e2.name === 'AbortError') throw new Error('__CANCELLED__');
+        throw e2;
+      }
+    }
     throw e;
   }
 }
