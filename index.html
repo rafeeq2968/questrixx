@@ -617,13 +617,22 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   <div class="out-wrap" id="outWrap">
     <div class="card" style="padding:18px 22px">
       <div class="out-bar">
-        <button class="tbtn primary" onclick="dlPDF()">⬇ Download PDF</button>
+        <button class="tbtn primary" onclick="dlPDF()">⬇ PDF (Full)</button>
+        <button class="tbtn primary" onclick="dlPaperOnlyPDF()" style="background:var(--sage);border-color:var(--sage);color:#000">📄 Paper Only</button>
         <button class="tbtn" onclick="dlTXT()">📄 TXT</button>
         <button class="tbtn" onclick="copyTxt()">📋 Copy</button>
         <button class="tbtn" onclick="printPaper()">🖨 Print</button>
         <button class="tbtn" onclick="generate()">🔄 Regenerate</button>
         <button class="tbtn" onclick="newPaper()" style="color:var(--sage);border-color:var(--sage)">✦ New Paper</button>
         <button class="tbtn" id="editToggleBtn" onclick="toggleEditMode()" style="color:var(--gold);border-color:var(--gold)">✏️ Edit</button>
+      </div>
+      <!-- Answer Key download bar — shown only when key exists -->
+      <div id="keyDlBar" style="display:none;flex-wrap:wrap;gap:8px;padding:10px 0 4px;border-top:1px solid var(--b1);margin-top:8px;align-items:center">
+        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gold)">📋 Answer Key:</span>
+        <button class="tbtn" onclick="dlKeyPDF()" style="color:var(--gold);border-color:var(--gold)">⬇ Key PDF</button>
+        <button class="tbtn" onclick="dlKeyTXT()" style="color:var(--gold);border-color:var(--gold)">📄 Key TXT</button>
+        <button class="tbtn" onclick="copyKey()" style="color:var(--gold);border-color:var(--gold)">📋 Copy Key</button>
+        <button class="tbtn" onclick="toggleKeyView()" id="keyViewBtn" style="color:var(--muted2)">👁 Show/Hide Key</button>
       </div>
       <div id="editHint" style="display:none;font-size:11px;color:var(--gold);font-weight:600;padding:6px 0 2px">✏️ Editing mode — click any text to edit. Changes are saved automatically when you download.</div>
       <div class="out-meta" id="outMeta"></div>
@@ -1440,14 +1449,10 @@ function filterTemplates() {
 function loadTemplate(idx) {
   var t = TEMPLATES[idx];
   if (!t) { showToast('Template not found', 'err'); return; }
-  // Templates store their data in t.p OR t.params — support both
   var params = t.p || t.params;
   if (!params) { showToast('Template data missing', 'err'); return; }
-  // Switch to Generate view first, then fill fields after view transition
   showView('gen');
-  setTimeout(function() {
-    loadParams(params);
-  }, 150);
+  setTimeout(function() { loadParams(params); }, 150);
 }
 
 function loadParams(p) {
@@ -1727,22 +1732,79 @@ function buildPrompt(p) {
     '9. All questions: factually accurate, curriculum-correct, properly worded, educationally valid\n' +
     '10. Difficulty: ' + p.easy + '% Easy questions, ' + p.medium + '% Medium, ' + p.hard + '% Hard — distribute across sections\n' +
     (p.answerKey ?
-      '11. ANSWER KEY — MANDATORY SEPARATE PAGE after "END OF QUESTION PAPER":\n' +
-      '    ════════════════════════════════════════════════════════\n' +
-      '    ANSWER KEY / SOLUTIONS\n' +
-      '    ════════════════════════════════════════════════════════\n' +
-      '    ANSWER LENGTH RULES — strictly based on marks per question:\n' +
-      '    • MCQ/True-False/One-word (1 mk): Answer only. Example: Q1.(b)  Q2.True  Q3.Mitosis\n' +
-      '    • Fill in the Blank (1-2 mk): Exact word/phrase only. No extra explanation.\n' +
-      '    • Very Short Answer (1-2 mk): Maximum 1-2 sentences. Direct answer only.\n' +
-      '    • Short Answer (3-4 mk): 4-6 sentences covering all key points. Use bullet points for clarity.\n' +
-      '    • Long Answer (5-8 mk): Minimum 2-3 full paragraphs. Structure: Introduction → Explanation with examples → Conclusion. Minimum 180 words.\n' +
-      '    • Very Long/Detailed Answer (10+ mk): Minimum 350 words. Must include: definition, detailed explanation, labelled diagram (described), real-world examples, applications, and conclusion.\n' +
-      '    • Numerical/Problem (any mk): Full working — Formula stated → Values substituted → Step-by-step calculation → Final answer with units.\n' +
-      '    • Case-Based/Passage (per part): Answer each (i)(ii)(iii) separately. Each part 2-4 sentences minimum.\n' +
-      '    • Assertion-Reason (1 mk): State option letter (A/B/C/D) + one-line reason.\n' +
-      '    CRITICAL: A 10-mark answer must be detailed enough for full marks. A 1-mark answer must be concise. Match answer length to marks always.\n' +
-      '    Answer key MUST appear on its own page, completely after the question paper ends.\n'
+      '11. ANSWER KEY — MANDATORY, starts on a NEW PAGE after "*** END OF QUESTION PAPER ***"\n\n' +
+      '    The Answer Key must use EXACTLY this format:\n\n' +
+      '    ════════════════════════════════════════════════════════════════\n' +
+      '    ANSWER KEY & SOLUTIONS\n' +
+      '    ' + (p.examName || 'Examination') + ' | ' + p.subject + '\n' +
+      '    ════════════════════════════════════════════════════════════════\n\n' +
+      '    SECTION-BY-SECTION ANSWERS — mirror every section of the question paper:\n\n' +
+      '    ── ANSWER FORMAT RULES (strictly follow based on marks) ──\n\n' +
+      '    [1-mark MCQ / True-False / Assertion-Reason]:\n' +
+      '      Layout: Q1. (b)   Q2. True   Q3. (A) — Both assertion and reason are correct and reason explains assertion\n' +
+      '      For MCQ: State the correct option letter + the option text.\n' +
+      '      For Assertion-Reason: State option (A/B/C/D) + one-line explanation of why.\n\n' +
+      '    [1–2 mark Fill in the Blank / One-word / Very Short Answer]:\n' +
+      '      Layout: Q4. [Ans: Mitochondria]\n' +
+      '      Provide the exact word/phrase/value. No long explanations.\n\n' +
+      '    [2-mark Short Answer]:\n' +
+      '      Layout:\n' +
+      '      Q5. [2 Marks]\n' +
+      '      Answer: Write 3–4 clear sentences. Cover the key definition and one explanation point.\n\n' +
+      '    [3–4 mark Short Answer]:\n' +
+      '      Layout:\n' +
+      '      Q6. [3 Marks]\n' +
+      '      Answer:\n' +
+      '      • Point 1: [key concept]\n' +
+      '      • Point 2: [explanation]\n' +
+      '      • Point 3: [example or application]\n' +
+      '      (Min 5–6 sentences, bullet format for clarity)\n\n' +
+      '    [5–6 mark Long Answer]:\n' +
+      '      Layout:\n' +
+      '      Q7. [5 Marks]\n' +
+      '      Answer:\n' +
+      '      Introduction: [1–2 sentences defining the topic]\n' +
+      '      Main Explanation:\n' +
+      '      • [Key point 1 with detail]\n' +
+      '      • [Key point 2 with detail]\n' +
+      '      • [Key point 3 with detail]\n' +
+      '      Example: [Real-world or textbook example]\n' +
+      '      Conclusion: [1 sentence summary]\n' +
+      '      (Minimum 150 words total)\n\n' +
+      '    [8–10 mark Detailed / Essay Answer]:\n' +
+      '      Layout:\n' +
+      '      Q8. [10 Marks]\n' +
+      '      Answer:\n' +
+      '      1. Definition & Introduction: [Full paragraph]\n' +
+      '      2. Detailed Explanation:\n' +
+      '         • [Sub-point a with full detail]\n' +
+      '         • [Sub-point b with full detail]\n' +
+      '         • [Sub-point c with full detail]\n' +
+      '      3. Diagram / Schematic: [Describe what a labelled diagram would show]\n' +
+      '      4. Real-World Application / Example: [Full paragraph]\n' +
+      '      5. Conclusion: [Summary paragraph]\n' +
+      '      (Minimum 350 words — write in full paragraphs, not just bullets)\n\n' +
+      '    [Numerical / Problem-Solving (any marks)]:\n' +
+      '      Layout:\n' +
+      '      Q9. [X Marks]\n' +
+      '      Given: [list all given values]\n' +
+      '      To Find: [what needs to be calculated]\n' +
+      '      Formula: [state the formula used]\n' +
+      '      Solution:\n' +
+      '        Step 1: [substitution]\n' +
+      '        Step 2: [calculation]\n' +
+      '        Step 3: [simplification]\n' +
+      '      Answer: [Final value with correct SI unit]\n\n' +
+      '    [Case-Based / Passage Question (per sub-part)]:\n' +
+      '      Answer each sub-part (i), (ii), (iii) separately.\n' +
+      '      Each sub-part answer: 2–4 sentences minimum, directly from the passage or curriculum.\n\n' +
+      '    ── END OF ANSWER KEY ──\n\n' +
+      '    CRITICAL RULES FOR ANSWER KEY:\n' +
+      '    • Answer EVERY question in the paper — no skipping.\n' +
+      '    • Match question numbering exactly — Q1, Q2, Q3... in same order as paper.\n' +
+      '    • Match answer length strictly to marks — a 10-mark answer MUST be 350+ words.\n' +
+      '    • For MCQ sections, list all answers in a compact grid first, then give brief explanations.\n' +
+      '    • Answer key ends with: ════ *** END OF ANSWER KEY *** ════\n'
       : '11. Do NOT include any answers anywhere in the question paper.\n') +
     '\nIMPORTANT: Generate completely NEW and UNIQUE questions — never repeat questions from any previous paper. Generation ID: ' + Math.random().toString(36).slice(2) + '-' + Date.now() + '\nGenerate the FULL, COMPLETE, UNTRUNCATED question paper — do NOT stop midway:';
 }
@@ -1827,19 +1889,17 @@ async function generate() {
     document.getElementById('progressWrap').classList.remove('on');
     document.getElementById('genBtn').disabled = false;
     var msg = e.message || 'Generation failed';
-    if (msg === '__CANCELLED__') return;
+    if (msg === '__CANCELLED__') return; // user started a new generation — no error shown
     if (msg.includes('not configured') || msg.includes('Contact support') || msg === 'NO_KEY') {
-      showToast('⚠️ API keys not set on Vercel. Add GEMINI_API_KEY + GROQ_API_KEY in Vercel → Settings → Environment Variables, then Redeploy.', 'err');
-    } else if (msg.includes('401') || msg.includes('403') || msg.toLowerCase().includes('api key')) {
-      showToast('❌ API key error — check your Vercel environment variables.', 'err');
+      showToast('⚠️ Generation failed: API keys not set on Vercel. Go to Vercel → Settings → Environment Variables and add GEMINI_API_KEY + GROQ_API_KEY, then Redeploy.', 'err');
+    } else if (msg.includes('401') || msg.includes('invalid') || msg.toLowerCase().includes('api key')) {
+      showToast('❌ Generation failed. Please try again.', 'err');
     } else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate')) {
-      showToast('⏳ AI quota exceeded — please wait 1 minute and try again.', 'err');
-    } else if (msg.includes('Network error') || msg.includes('internet')) {
-      showToast('❌ No internet — check your connection and try again.', 'err');
-    } else if (msg.includes('500') || msg.includes('Server error')) {
-      showToast('⚠️ Server issue — please try again in a few seconds.', 'err');
+      showToast('⏳ AI service is busy — please retry in a moment.', 'err');
+    } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) {
+      showToast('❌ Network error — check your internet connection.', 'err');
     } else {
-      showToast('❌ ' + msg.slice(0, 120), 'err');
+      showToast('❌ ' + msg, 'err');
     }
     return;
   }
@@ -1878,14 +1938,61 @@ function renderPaper(text, model, p) {
   if (p) incStat('papers');
 }
 
+// Split raw AI text into paper part and answer key part
+function splitPaperAndKey(text) {
+  // Look for the answer key separator — try multiple patterns the AI might use
+  var patterns = [
+    /\n(={4,}[\s\S]{0,40}ANSWER KEY[\s\S]{0,40}={4,})/i,
+    /\n(ANSWER KEY\s*[&\/]\s*SOLUTIONS)/i,
+    /\n(ANSWER KEY\s*\n)/i,
+    /\n(─{4,}[\s\S]{0,10}ANSWER KEY)/i,
+  ];
+  for (var pi = 0; pi < patterns.length; pi++) {
+    var m = text.search(patterns[pi]);
+    if (m > 0) {
+      // Find the actual line start
+      var lineStart = text.lastIndexOf('\n', m) + 1;
+      return { paper: text.substring(0, lineStart).trim(), key: text.substring(lineStart).trim() };
+    }
+  }
+  // Fallback: look for standalone "ANSWER KEY" line
+  var lines = text.split('\n');
+  for (var li = 0; li < lines.length; li++) {
+    var l = lines[li].trim();
+    if (/^(={3,}[-\s]*)?ANSWER KEY/i.test(l) || /^ANSWER KEY\s*[&\/]/i.test(l)) {
+      return {
+        paper: lines.slice(0, li).join('\n').trim(),
+        key: lines.slice(li).join('\n').trim()
+      };
+    }
+  }
+  return { paper: text.trim(), key: '' };
+}
+
+// Store extracted key text globally so download functions can access it
+var lastKeyText = '';
+
 // Format plain-text paper into styled HTML for display
 function formatPaperHTML(text) {
+  var parts = splitPaperAndKey(text);
+  lastKeyText = parts.key;
+  // Update download button visibility based on whether key exists
+  updateKeyButtons(!!parts.key);
+  return formatPaperSection(parts.paper) + (parts.key ? formatKeySection(parts.key) : '');
+}
+
+function updateKeyButtons(hasKey) {
+  var bar = document.getElementById('keyDlBar');
+  if (bar) bar.style.display = hasKey ? 'flex' : 'none';
+}
+
+function formatPaperSection(text) {
   var lines = text.split('\n');
   var html = '';
   var inHeader = true;
   var hCount = 0;
 
-  for (var i=0; i<lines.length; i++) {
+  for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
     var l = line.trim();
     var esc = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1899,27 +2006,20 @@ function formatPaperHTML(text) {
 
     // END OF PAPER
     if (/END OF QUESTION PAPER/i.test(l)) {
-      inHeader=false;
+      inHeader = false;
       html += '<div style="text-align:center;font-weight:bold;border:1.5px solid #b09a50;padding:8px 20px;margin:16px 0;border-radius:4px;color:#5a4a20;font-size:13px">' + lesc + '</div>';
       continue;
     }
 
-    // ANSWER KEY
-    if (/ANSWER KEY/i.test(l) && l.replace(/[═─s]/g,'').length < 30) {
-      inHeader=false;
-      html += '<div style="margin-top:28px;padding:10px 0 8px;text-align:center;font-size:15px;font-weight:900;color:#8a6c10;letter-spacing:0.05em;border-top:2px solid #b09a50">' + lesc + '</div>';
-      continue;
-    }
-
-    // Header block (institution, exam name, etc)
+    // Header block
     if (inHeader && hCount < 10 && !/^Q\d+\./.test(l) && !/^SECTION/i.test(l) && !/^GENERAL INSTRUCTIONS/i.test(l)) {
-      var fs2 = hCount===0 ? '17px' : hCount<3 ? '13px' : '11px';
-      var fw2 = hCount<3 ? '800' : '500';
+      var fs2 = hCount === 0 ? '17px' : hCount < 3 ? '13px' : '11px';
+      var fw2 = hCount < 3 ? '800' : '500';
       html += '<div style="text-align:center;font-size:' + fs2 + ';font-weight:' + fw2 + ';line-height:1.6;color:#1a1a1a;margin-bottom:2px">' + lesc + '</div>';
       hCount++;
       continue;
     }
-    inHeader=false;
+    inHeader = false;
 
     // SECTION headings
     if (/^SECTION [A-Z]/i.test(l)) {
@@ -1935,9 +2035,9 @@ function formatPaperHTML(text) {
 
     // Questions Q1. Q2.
     if (/^Q\d+\./.test(l)) {
-      var marks='', qtext=lesc;
-      var mm=lesc.match(/\[(\d[\d.]* ?[Mm]arks?)\]/);
-      if(mm){marks='<span style="float:right;font-size:11px;color:#666;font-weight:500">' + mm[1] + '</span>';qtext=lesc.replace(mm[0],'').trim();}
+      var marks = '', qtext = lesc;
+      var mm = lesc.match(/\[(\d[\d.]* ?[Mm]arks?)\]/);
+      if (mm) { marks = '<span style="float:right;font-size:11px;color:#666;font-weight:500">' + mm[1] + '</span>'; qtext = lesc.replace(mm[0], '').trim(); }
       html += '<div style="font-weight:700;font-size:13px;margin-top:13px;margin-bottom:4px;line-height:1.7">' + marks + qtext + '</div>';
       continue;
     }
@@ -1948,15 +2048,142 @@ function formatPaperHTML(text) {
       continue;
     }
 
-    // Numbered instructions
-    if (/^d+.s/.test(l) && hCount<25) {
-      html += '<div style="padding-left:16px;font-size:12px;line-height:1.9;color:#444">' + esc + '</div>';
-      continue;
-    }
-
     // Default
     html += '<div style="font-size:12.5px;line-height:1.95;color:#2a2a2a">' + esc + '</div>';
   }
+  return html;
+}
+
+function formatKeySection(text) {
+  if (!text) return '';
+  var lines = text.split('\n');
+  var html = '<div id="answerKeySection" style="margin-top:32px;border-top:3px solid #b09a50;padding-top:24px">';
+
+  // Key header banner
+  html += '<div style="background:linear-gradient(135deg,#1e3a22,#0f2010);border-radius:8px;padding:16px 20px;margin-bottom:20px;text-align:center">' +
+    '<div style="font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#8db88d;margin-bottom:4px">📋 OFFICIAL DOCUMENT</div>' +
+    '<div style="font-size:18px;font-weight:900;color:#f0c040;letter-spacing:0.05em">ANSWER KEY & SOLUTIONS</div>' +
+    '<div style="font-size:11px;color:#8db88d;margin-top:4px">For Evaluator Use Only</div>' +
+    '</div>';
+
+  var inMCQGrid = false;
+  var mcqGridHTML = '';
+
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var l = line.trim();
+    var esc = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var lesc = l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    if (!l) { html += '<div style="height:6px"></div>'; continue; }
+
+    // Skip redundant "ANSWER KEY" title lines since we already rendered the banner
+    if (/^(={3,})?[\s]*ANSWER KEY[\s]*([&\/][\s]*SOLUTIONS)?[\s]*(={3,})?$/i.test(l)) continue;
+    if (/^FOR EVALUATOR USE/i.test(l)) continue;
+
+    // Section end marker
+    if (/END OF ANSWER KEY/i.test(l)) {
+      if (inMCQGrid) { html += '</div>' + mcqGridHTML + '</div>'; inMCQGrid = false; mcqGridHTML = ''; }
+      html += '<div style="text-align:center;font-weight:bold;border:1.5px solid #b09a50;padding:8px 20px;margin:20px 0;border-radius:4px;color:#5a4a20;font-size:12px">' + lesc + '</div>';
+      continue;
+    }
+
+    // Thick dividers
+    if (/^[═]{4,}/.test(l)) { html += '<hr style="border:none;border-top:2px solid #c9a84c;margin:12px 0">'; continue; }
+    if (/^[─]{4,}/.test(l) || /^──/.test(l)) { html += '<hr style="border:none;border-top:1px solid #ddd;margin:8px 0">'; continue; }
+
+    // SECTION headings in answer key
+    if (/^SECTION [A-Z]/i.test(l) || /^PART [A-Z]/i.test(l)) {
+      if (inMCQGrid) { html += '</div>' + mcqGridHTML + '</div>'; inMCQGrid = false; mcqGridHTML = ''; }
+      html += '<div style="background:#2a4a2c;color:#f0c040;font-weight:800;font-size:12px;padding:6px 14px;border-radius:5px;margin:16px 0 10px;letter-spacing:0.07em;text-transform:uppercase">' + lesc + '</div>';
+      continue;
+    }
+
+    // MCQ quick-reference grid: lines like "Q1.(b) Q2.(a) Q3.(c)" or "Q1. (b)"
+    if (/^Q\d+\.\s*[\[(]?[A-Da-d][\])]?/.test(l) && !/Answer:/i.test(l) && l.length < 120) {
+      // Parse all MCQ answers on this line
+      var matches = l.match(/Q(\d+)\.\s*[\[(]?([A-Da-d])[\])]?/gi) || [];
+      if (matches.length >= 2) {
+        // Multiple answers on one line — render as grid
+        if (!inMCQGrid) {
+          inMCQGrid = true;
+          html += '<div style="background:#f9f6ee;border:1px solid #e0d8b8;border-radius:6px;padding:12px 14px;margin:8px 0">';
+          html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#8a7840;margin-bottom:8px">Quick Answer Reference</div>';
+          html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+        }
+        matches.forEach(function(m) {
+          var mParsed = m.match(/Q(\d+)\.\s*[\[(]?([A-Da-d])[\])]?/i);
+          if (mParsed) {
+            html += '<span style="background:#fff;border:1px solid #d4c98a;border-radius:4px;padding:3px 8px;font-size:11.5px;font-weight:700;color:#4a3a10;min-width:52px;text-align:center">Q' + mParsed[1] + '. <b style="color:#1a6a1a">' + mParsed[2].toUpperCase() + '</b></span>';
+          }
+        });
+        continue;
+      }
+    }
+
+    // Close MCQ grid if we hit a non-MCQ line
+    if (inMCQGrid) { html += '</div></div>'; inMCQGrid = false; }
+
+    // Answer key question entry: "Q5. [3 Marks]" or "Q5. Answer:" style
+    if (/^Q\d+\./.test(l)) {
+      var marksM = lesc.match(/\[(\d[\d.]* ?[Mm]arks?)\]/);
+      var marksSpan = marksM ? '<span style="float:right;background:#e8f4e8;border:1px solid #8ac88a;border-radius:3px;padding:1px 7px;font-size:10.5px;font-weight:700;color:#1a6a1a">' + marksM[1] + '</span>' : '';
+      var qNum = lesc.match(/^Q(\d+)\./);
+      var qLabel = qNum ? 'Q' + qNum[1] + '.' : '';
+      var qRest = lesc.replace(/^Q\d+\./, '').replace(marksM ? marksM[0] : '', '').trim();
+      html += '<div style="margin-top:14px;padding:8px 12px;background:#f8f6f0;border-left:3px solid #c9a84c;border-radius:0 5px 5px 0">' +
+        '<div style="font-weight:800;font-size:12.5px;color:#3a2a08;margin-bottom:4px">' + marksSpan + '<span style="color:#8a6010">' + qLabel + '</span> ' + qRest + '</div>';
+      // Check if next line is "Answer:" — if not, close the div now (will be closed later)
+      // We leave it open only if immediately followed by answer content
+      var nextL = (lines[i+1] || '').trim();
+      if (!nextL || /^Q\d+\./.test(nextL) || /^SECTION/i.test(nextL)) {
+        html += '</div>';
+      }
+      // else leave open — next lines will fill it
+      continue;
+    }
+
+    // "Answer:" label inside a question block
+    if (/^Answer\s*:/i.test(l) || /^Ans\s*:/i.test(l) || /^Solution\s*:/i.test(l)) {
+      var answText = lesc.replace(/^(Answer|Ans|Solution)\s*:/i, '').trim();
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#2a6a40;margin:2px 0 4px">Answer:</div>';
+      if (answText) html += '<div style="font-size:12px;line-height:1.8;color:#222;padding-left:4px">' + answText + '</div>';
+      continue;
+    }
+
+    // Structured sub-labels: "Introduction:", "Given:", "To Find:", "Formula:", "Step N:", "Conclusion:", etc.
+    if (/^(Introduction|Given|To Find|Formula|Solution|Step \d+|Conclusion|Main Explanation|Example|Diagram|Note)\s*:/i.test(l)) {
+      var labelM = l.match(/^([^:]+):/);
+      var labelText = labelM ? labelM[1] : '';
+      var rest = lesc.replace(/^[^:]+:\s*/, '');
+      html += '<div style="font-size:11.5px;margin:5px 0 2px;color:#333">' +
+        '<span style="font-weight:700;color:#5a3a08">' + labelText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + ':</span> ' + rest +
+        '</div>';
+      continue;
+    }
+
+    // Bullet points
+    if (/^[•·\-\*]\s/.test(l) || /^\d+\.\s/.test(l)) {
+      html += '<div style="padding-left:18px;font-size:12px;line-height:1.8;color:#222;position:relative">' +
+        '<span style="position:absolute;left:4px;color:#c9a84c;font-weight:700">•</span>' +
+        lesc.replace(/^[•·\-\*\d\.]\s+/, '') +
+        '</div>';
+      continue;
+    }
+
+    // Sub-parts (i) (ii) (iii)
+    if (/^\([ivxIVX]+\)/.test(l) || /^\([a-c]\)/.test(l)) {
+      html += '<div style="padding-left:20px;font-size:12px;line-height:1.8;color:#333;font-style:italic">' + lesc + '</div>';
+      continue;
+    }
+
+    // Close any open question div on section-like lines
+    // Default answer text
+    html += '<div style="font-size:12px;line-height:1.85;color:#333;padding-left:4px">' + esc + '</div>';
+  }
+
+  if (inMCQGrid) { html += '</div></div>'; }
+  html += '</div>'; // close answerKeySection
   return html;
 }
 
@@ -1967,10 +2194,7 @@ function formatPaperHTML(text) {
 var _activeController = null;
 
 async function callAI(prompt) {
-  // Cancel any previous in-flight request immediately
-  if (_activeController) {
-    try { _activeController.abort(); } catch(x) {}
-  }
+  if (_activeController) { try { _activeController.abort(); } catch(x) {} }
 
   var safePrompt = prompt.length > 45000
     ? prompt.substring(0, 45000) + '\n\n[Source content trimmed. Generate complete paper from above specs.]'
@@ -1979,53 +2203,36 @@ async function callAI(prompt) {
   async function attempt(attemptNum) {
     var ctrl = new AbortController();
     _activeController = ctrl;
-
-    // Show retry message on 2nd+ attempt
     if (attemptNum > 1) {
       var stepEl = document.getElementById('progStep');
       if (stepEl) stepEl.textContent = 'Retrying with backup AI model… (' + attemptNum + '/3)';
     }
-
     var res;
     try {
       res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: safePrompt }),
-        signal: ctrl.signal
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: safePrompt }), signal: ctrl.signal
       });
     } catch(fetchErr) {
       if (fetchErr.name === 'AbortError') throw new Error('__CANCELLED__');
       throw new Error('Network error — check your internet connection.');
     }
-
     if (!res.ok) {
-      var errData = {};
-      try { errData = await res.json(); } catch(x) {}
-      var errMsg = errData.error || ('Server error ' + res.status);
-      if (errData.detail) errMsg += ' | ' + errData.detail;
-      throw new Error(errMsg);
+      var errData = {}; try { errData = await res.json(); } catch(x) {}
+      throw new Error(errData.error || ('Server error ' + res.status));
     }
-
-    var data;
-    try { data = await res.json(); } catch(x) {
-      throw new Error('Invalid server response — please try again.');
-    }
+    var data; try { data = await res.json(); } catch(x) { throw new Error('Invalid server response.'); }
     if (!data.result || !data.result.trim()) throw new Error('AI returned empty output — please try again.');
     return { result: data.result, model: data.model || 'Questrix AI' };
   }
 
-  // Auto-retry up to 3 times before giving up
   var lastErr;
   for (var i = 1; i <= 3; i++) {
-    try {
-      return await attempt(i);
-    } catch(e) {
+    try { return await attempt(i); }
+    catch(e) {
       if (e.message === '__CANCELLED__' || e.name === 'AbortError') throw new Error('__CANCELLED__');
       lastErr = e;
-      // Don't retry on config/auth errors — retrying won't help
       if (e.message && (e.message.includes('configured') || e.message.includes('401') || e.message.includes('403'))) break;
-      // Wait before retrying (500ms then 1000ms)
       if (i < 3) await new Promise(function(r) { setTimeout(r, i * 500); });
     }
   }
@@ -2042,6 +2249,12 @@ async function dlPDF() {
   var box = document.getElementById('paperBox');
   var editedText = box ? (box.innerText || box.textContent || lastGenText) : lastGenText;
   if (!editedText || !editedText.trim()) { showToast('No paper to download', 'err'); return; }
+  lastGenText = editedText;
+  await _buildAndSavePDF(editedText, (v('examName') || 'QuestionPaper').replace(/[^a-z0-9]/gi,'_') + '_Full.pdf', '✅ Full PDF (Paper + Key) downloaded!');
+}
+
+// Shared PDF builder — takes plain text, builds professional PDF, saves with given filename
+async function _buildAndSavePDF(textInput, filename, successMsg) {
   try {
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -2061,23 +2274,24 @@ async function dlPDF() {
       doc.line(mL, yy, PW-mR, yy);
     }
 
-    var lines = editedText.split('\n');
+    var lines = textInput.split('\n');
     var inHeader = true;
     var headerLines = [];
     var headerEnd = 0;
+    var inAnswerKey = false;
 
-    // Pass 1: collect header lines (institution, exam name, date, marks, time)
+    // Pass 1: collect header lines
     for (var i=0; i<Math.min(lines.length,14); i++) {
       var l = lines[i].trim();
       if (!l) continue;
       if (/^[═─]{5,}/.test(l)) { headerEnd=i; break; }
       if (/^Q\d+\./.test(l) || /^SECTION [A-Z]/i.test(l) || /^GENERAL INSTRUCTIONS/i.test(l)) { headerEnd=i; break; }
+      if (/ANSWER KEY/i.test(l)) { headerEnd=i; break; }
       headerLines.push(l);
       headerEnd=i+1;
     }
 
     // Draw header block
-    // Background bar
     doc.setFillColor(15,35,20);
     doc.rect(0, 0, PW, 12, 'F');
     y = 8;
@@ -2087,36 +2301,24 @@ async function dlPDF() {
     doc.text('QUESTRIX — AI GENERATED QUESTION PAPER', PW/2, y, {align:'center'});
     y = mT;
 
-    // Institution (line 0) — large bold centered
     if (headerLines.length > 0) {
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(14);
-      doc.setTextColor(20,20,20);
+      doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(20,20,20);
       var inst = doc.splitTextToSize(headerLines[0], CW);
       inst.forEach(function(ln){ doc.text(ln, PW/2, y, {align:'center'}); y+=6.5; });
     }
-    // Exam name (line 1)
     if (headerLines.length > 1) {
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(11);
-      doc.setTextColor(40,40,40);
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(40,40,40);
       doc.text(headerLines[1], PW/2, y, {align:'center'}); y+=5.5;
     }
-    // Subject (line 2)
     if (headerLines.length > 2) {
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(10);
-      doc.setTextColor(60,60,60);
+      doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(60,60,60);
       doc.text(headerLines[2], PW/2, y, {align:'center'}); y+=5;
     }
-    // Remaining header lines (date, time, marks) — two-column layout
     y += 2;
     hLine(y, [100,90,50]); y+=3;
     var metaLines = headerLines.slice(3);
     for (var mi=0; mi<metaLines.length; mi+=2) {
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(9.5);
-      doc.setTextColor(30,30,30);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
       doc.text(metaLines[mi], mL, y);
       if (metaLines[mi+1]) doc.text(metaLines[mi+1], PW-mR, y, {align:'right'});
       y += 5;
@@ -2127,155 +2329,163 @@ async function dlPDF() {
     for (var i=headerEnd; i<lines.length; i++) {
       var raw = lines[i];
       var l = raw.trim();
-
       if (!l) { y += 2.5; continue; }
-
-      // Thick dividers — skip, use spacing
       if (/^[═]{4,}/.test(l) || /^[─]{4,}/.test(l)) { y+=1; continue; }
 
-      // ANSWER KEY — new page
-      if (/ANSWER KEY/i.test(l) && l.replace(/[═─s]/g,'').length < 25) {
-        doc.addPage(); y=mT;
+      // Detect ANSWER KEY section start
+      if (/ANSWER KEY/i.test(l) && !inAnswerKey) {
+        inAnswerKey = true;
+        doc.addPage(); y = mT;
+        // Answer key header
         doc.setFillColor(20,50,25);
-        doc.rect(mL-2, y-4, CW+4, 10, 'F');
-        doc.setFont('helvetica','bold');
-        doc.setFontSize(11);
-        doc.setTextColor(220,180,60);
-        doc.text('ANSWER KEY / SOLUTIONS', PW/2, y+2, {align:'center'});
+        doc.rect(0, 0, PW, 14, 'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(180,150,60);
+        doc.text('QUESTRIX — ANSWER KEY & SOLUTIONS', PW/2, 9, {align:'center'});
+        y = mT + 4;
+        doc.setFillColor(20,50,25);
+        doc.roundedRect(mL-2, y-4, CW+4, 12, 2, 2, 'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(220,185,65);
+        doc.text('ANSWER KEY & SOLUTIONS', PW/2, y+3, {align:'center'});
         doc.setTextColor(30,30,30);
-        y += 12;
+        y += 14;
         continue;
       }
 
-      // END OF PAPER
-      if (/END OF QUESTION PAPER/i.test(l)) {
-        checkPage(16);
-        y += 6;
+      // END markers
+      if (/END OF (QUESTION PAPER|ANSWER KEY)/i.test(l)) {
+        checkPage(16); y += 4;
         hLine(y); y+=4;
-        doc.setFont('helvetica','bold');
-        doc.setFontSize(10);
-        doc.setTextColor(80,80,80);
-        doc.text('* * *   END OF QUESTION PAPER   * * *', PW/2, y, {align:'center'});
-        hLine(y+4); y+=10;
-        doc.setTextColor(30,30,30);
+        doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(80,80,80);
+        doc.text('* * *   ' + l.replace(/[═\*]/g,'').trim() + '   * * *', PW/2, y, {align:'center'});
+        hLine(y+4); y+=10; doc.setTextColor(30,30,30);
         continue;
       }
 
       // SECTION heading
-      if (/^SECTION [A-Z]/i.test(l)) {
-        checkPage(14);
-        y += 4;
+      if (/^SECTION [A-Z]/i.test(l) || /^PART [A-Z]/i.test(l)) {
+        checkPage(14); y += 4;
         doc.setFillColor(20,50,25);
         doc.roundedRect(mL-2, y-4, CW+4, 9, 1.5, 1.5, 'F');
-        doc.setFont('helvetica','bold');
-        doc.setFontSize(10);
-        doc.setTextColor(220,185,65);
+        doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(220,185,65);
         doc.text(l.toUpperCase(), mL+2, y+2);
-        doc.setTextColor(30,30,30);
-        y += 12;
+        doc.setTextColor(30,30,30); y += 12;
         continue;
       }
 
-      // GENERAL INSTRUCTIONS heading
+      // GENERAL INSTRUCTIONS
       if (/GENERAL INSTRUCTIONS/i.test(l) || /INSTRUCTIONS TO CANDIDATES/i.test(l)) {
-        checkPage(10);
-        y += 3;
-        doc.setFont('helvetica','bold');
-        doc.setFontSize(10);
-        doc.setTextColor(50,100,70);
-        doc.text(l, mL, y);
-        doc.setTextColor(30,30,30);
-        y += 7;
+        checkPage(10); y += 3;
+        doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(50,100,70);
+        doc.text(l, mL, y); doc.setTextColor(30,30,30); y += 7;
         continue;
       }
 
-      // Question number Q1. Q2. etc
+      // Answer key Q entries: "Q5. [3 Marks]" header lines
+      if (inAnswerKey && /^Q\d+\./.test(l)) {
+        checkPage(14); y += 3;
+        var marksTag2 = ''; var qText2 = l;
+        var mMatch2 = l.match(/\[(\d+\.?\d*\s*[Mm]arks?)\]/);
+        if (mMatch2) {
+          marksTag2 = mMatch2[0]; qText2 = l.replace(mMatch2[0],'').trim();
+          // Draw marks badge
+          doc.setFillColor(232,244,232); doc.setDrawColor(100,180,100);
+          doc.roundedRect(PW-mR-22, y-4, 20, 6, 1, 1, 'FD');
+          doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(20,100,20);
+          doc.text(mMatch2[1], PW-mR-12, y, {align:'center'});
+        }
+        doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(120,80,10);
+        var qLines2 = doc.splitTextToSize(qText2, marksTag2 ? CW-26 : CW);
+        qLines2.forEach(function(ql){ checkPage(7); doc.text(ql, mL, y); y+=5.5; });
+        doc.setTextColor(30,30,30);
+        // Draw left accent bar
+        doc.setFillColor(200,160,60); doc.rect(mL-4, y-5.5*qLines2.length-3, 2, 5.5*qLines2.length+2, 'F');
+        continue;
+      }
+
+      // Question number (paper section)
       if (/^Q\d+\./.test(l)) {
-        checkPage(12);
-        y += 3;
-        // Parse marks tag [X Mark] [X Marks] at end
-        var marksTag = '';
-        var qText = l;
+        checkPage(12); y += 3;
+        var marksTag = ''; var qText = l;
         var mMatch = l.match(/\[(\d+\.?\d*\s*[Mm]arks?)\]/);
         if (mMatch) { marksTag = mMatch[0]; qText = l.replace(mMatch[0],'').trim(); }
-        doc.setFont('helvetica','bold');
-        doc.setFontSize(10.5);
+        doc.setFont('helvetica','bold'); doc.setFontSize(10.5);
         var qLines = doc.splitTextToSize(qText, marksTag ? CW-22 : CW);
         qLines.forEach(function(ql,qi){
-          checkPage(7);
-          doc.text(ql, mL, y);
+          checkPage(7); doc.text(ql, mL, y);
           if(qi===0 && marksTag){
-            doc.setFont('helvetica','normal');
-            doc.setFontSize(9);
-            doc.setTextColor(100,100,100);
+            doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(100,100,100);
             doc.text(marksTag, PW-mR, y, {align:'right'});
-            doc.setTextColor(30,30,30);
-            doc.setFont('helvetica','bold');
-            doc.setFontSize(10.5);
+            doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(10.5);
           }
           y+=6;
         });
         continue;
       }
 
-      // MCQ options (a) (b) (c) (d)
+      // Answer/Solution/Given labels in answer key
+      if (inAnswerKey && /^(Answer|Ans|Solution|Given|To Find|Formula|Step \d+|Conclusion|Introduction)\s*:/i.test(l)) {
+        checkPage(7);
+        var lbMatch = l.match(/^([^:]+):/);
+        doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(40,90,50);
+        doc.text((lbMatch ? lbMatch[1] : '') + ':', mL+4, y);
+        var restAfterLabel = l.replace(/^[^:]+:\s*/,'');
+        if (restAfterLabel) {
+          doc.setFont('helvetica','normal'); doc.setTextColor(30,30,30);
+          var rLines = doc.splitTextToSize(restAfterLabel, CW-30);
+          rLines.forEach(function(rl){ doc.text(rl, mL+30, y); y+=5; });
+        } else { y+=5; }
+        doc.setTextColor(30,30,30);
+        continue;
+      }
+
+      // Bullet points
+      if (/^[•·\-]\s/.test(l)) {
+        checkPage(7);
+        doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(30,30,30);
+        doc.text('•', mL + (inAnswerKey ? 8 : 4), y);
+        var bulletLines = doc.splitTextToSize(l.replace(/^[•·\-]\s+/,''), CW - (inAnswerKey ? 18 : 10));
+        bulletLines.forEach(function(bl){ checkPage(6); doc.text(bl, mL + (inAnswerKey ? 14 : 10), y); y+=5.5; });
+        continue;
+      }
+
+      // MCQ options
       if (/^[a-dA-D][.)]/i.test(l)) {
         checkPage(7);
-        doc.setFont('helvetica','normal');
-        doc.setFontSize(10);
-        doc.setTextColor(40,40,40);
+        doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(40,40,40);
         var oLines = doc.splitTextToSize(raw, CW-10);
         oLines.forEach(function(ol){ checkPage(6); doc.text(ol, mL+10, y); y+=5.5; });
         doc.setTextColor(30,30,30);
         continue;
       }
 
-      // Sub-question (i) (ii) (iii) or (a)(b) for essay
-      if (/^s*([ivxIVXa-c]+)/.test(raw)) {
+      // Sub-questions (i) (ii)
+      if (/^\s*\([ivxIVXa-c]+\)/.test(raw)) {
         checkPage(7);
-        doc.setFont('helvetica','normal');
-        doc.setFontSize(10);
+        doc.setFont('helvetica','normal'); doc.setFontSize(10);
         var sLines = doc.splitTextToSize(raw.trim(), CW-8);
         sLines.forEach(function(sl){ checkPage(6); doc.text(sl, mL+8, y); y+=5.5; });
         continue;
       }
 
-      // Answer key entries Q1.(b) style
-      if (/^Q\d+\.\(/.test(l) || /^\d+\.\s+\(/.test(l) || /^Q\d+\.\s+[A-D]/.test(l)) {
-        checkPage(6);
-        doc.setFont('courier','normal');
-        doc.setFontSize(9.5);
-        var akLines = doc.splitTextToSize(l, CW/2);
-        akLines.forEach(function(al){ checkPage(6); doc.text(al, mL+4, y); y+=5; });
-        doc.setFont('helvetica','normal');
-        continue;
-      }
-
       // Default body text
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(10);
-      doc.setTextColor(30,30,30);
+      doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(30,30,30);
       var dLines = doc.splitTextToSize(raw, CW);
-      dLines.forEach(function(dl){ checkPage(6); doc.text(dl, mL, y); y+=5.5; });
+      dLines.forEach(function(dl){ checkPage(6); doc.text(dl, mL + (inAnswerKey ? 6 : 0), y); y+=5.5; });
     }
 
     // Footer on all pages
     var total = doc.getNumberOfPages();
     for (var pg=1; pg<=total; pg++) {
       doc.setPage(pg);
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(160,160,160);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(160,160,160);
       hLine(PH-mB+2, [200,200,200]);
       doc.text('Generated by Questrix', mL, PH-mB+6);
       doc.text('Page ' + pg + ' of ' + total, PW-mR, PH-mB+6, {align:'right'});
       doc.setTextColor(30,30,30);
     }
 
-    var fname = (document.getElementById('examName') ? document.getElementById('examName').value : '') || 'QuestionPaper';
-    doc.save(fname.replace(/[^a-z0-9]/gi,'_') + '.pdf');
-    showToast('✅ Professional PDF downloaded!', 'ok');
-    lastGenText = editedText;
+    doc.save(filename);
+    showToast(successMsg || '✅ PDF downloaded!', 'ok');
   } catch(e) { showToast('PDF error: ' + e.message, 'err'); }
 }
 
@@ -2283,7 +2493,7 @@ function dlTXT() {
   var box = document.getElementById('paperBox');
   var text = box ? (box.innerText || box.textContent || lastGenText) : lastGenText;
   if (!text || !text.trim()) { showToast('No paper', 'err'); return; }
-  lastGenText = text; // sync edits
+  lastGenText = text;
   var b = new Blob([text], {type: 'text/plain'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(b);
@@ -2291,6 +2501,49 @@ function dlTXT() {
   a.click();
   URL.revokeObjectURL(a.href);
   showToast('TXT downloaded!', 'ok');
+}
+
+// Download answer key as plain text file
+function dlKeyTXT() {
+  if (!lastKeyText || !lastKeyText.trim()) { showToast('No answer key found', 'err'); return; }
+  var b = new Blob([lastKeyText], {type: 'text/plain'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = (v('examName') || 'Paper').replace(/\s+/g, '_') + '_AnswerKey.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Answer Key TXT downloaded!', 'ok');
+}
+
+// Copy answer key to clipboard
+function copyKey() {
+  if (!lastKeyText || !lastKeyText.trim()) { showToast('No answer key found', 'err'); return; }
+  navigator.clipboard.writeText(lastKeyText).then(function() { showToast('Answer Key copied!', 'ok'); });
+}
+
+// Toggle visibility of answer key section on screen
+var _keyVisible = true;
+function toggleKeyView() {
+  var keySection = document.getElementById('answerKeySection');
+  if (!keySection) { showToast('No answer key in this paper', 'err'); return; }
+  _keyVisible = !_keyVisible;
+  keySection.style.display = _keyVisible ? '' : 'none';
+  var btn = document.getElementById('keyViewBtn');
+  if (btn) btn.textContent = _keyVisible ? '👁 Hide Key' : '👁 Show Key';
+  showToast(_keyVisible ? 'Answer Key shown' : 'Answer Key hidden', 'info');
+}
+
+// Download paper only (no answer key) as PDF
+async function dlPaperOnlyPDF() {
+  var parts = splitPaperAndKey(lastGenText);
+  if (!parts.paper) { showToast('No paper content found', 'err'); return; }
+  await _buildAndSavePDF(parts.paper, (v('examName') || 'Paper').replace(/[^a-z0-9]/gi,'_') + '_PaperOnly.pdf', 'Paper Only PDF downloaded!');
+}
+
+// Download answer key as a separate professional PDF
+async function dlKeyPDF() {
+  if (!lastKeyText || !lastKeyText.trim()) { showToast('No answer key found', 'err'); return; }
+  await _buildAndSavePDF(lastKeyText, (v('examName') || 'Paper').replace(/[^a-z0-9]/gi,'_') + '_AnswerKey.pdf', 'Answer Key PDF downloaded!');
 }
 function copyTxt() {
   var box = document.getElementById('paperBox');
