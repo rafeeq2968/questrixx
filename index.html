@@ -149,10 +149,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sw-bg::before{content:'';position:absolute;height:15px;width:15px;left:2px;bottom:2px;background:var(--muted);border-radius:50%;transition:.28s}
 .sw input:checked+.sw-bg{background:var(--gold);border-color:var(--gold)}
 .sw input:checked+.sw-bg::before{transform:translateX(17px);background:#000}
-.sl-wrap{display:flex;flex-direction:column;gap:16px}
-.sl-row{display:grid;grid-template-columns:100px 1fr 48px;align-items:center;gap:14px;touch-action:pan-x;position:relative;z-index:2}
+.sl-wrap{display:flex;flex-direction:column;gap:16px;touch-action:none}
+.sl-row{display:grid;grid-template-columns:100px 1fr 48px;align-items:center;gap:14px;touch-action:none;position:relative;z-index:10}
 .sl-lbl{font-size:12px;font-weight:700}.sl-easy{color:var(--sage)}.sl-med{color:var(--gold)}.sl-hard{color:var(--terra)}
-input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:3px;border-radius:999px;outline:none;cursor:pointer;background:var(--s4)}
+input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:3px;border-radius:999px;outline:none;cursor:pointer;background:var(--s4);touch-action:none;-ms-touch-action:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--gold);border:2px solid #000;box-shadow:0 0 8px var(--gold-glow);transition:.15s}
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 .sl-val{font-size:13px;font-weight:800;text-align:right}
@@ -335,8 +335,8 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <circle cx="62" cy="57" r="2.5" fill="#fff" opacity="0.8"/>
     <rect x="24" y="69" width="42" height="2.5" rx="1.25" fill="url(#sg1)" opacity="0.7"/>
   </svg>
-  <div class="splash-wordmark">Smart <b>Buddy</b></div>
-  <div class="splash-tagline">AI Question Paper Generator</div>
+  <div class="splash-wordmark">Ques<b>trix</b></div>
+  <div class="splash-tagline">Smart Question Paper Generator</div>
   <div class="splash-loader"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>
 </div>
 
@@ -359,13 +359,13 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <rect width="90" height="90" rx="22" fill="url(#ab1)"/>
     <text x="45" y="62" font-family="Georgia,serif" font-size="52" font-weight="400" font-style="italic" fill="url(#ab2)" text-anchor="middle">Q</text>
   </svg>
-  <div class="auth-brand">Smart <span>Buddy</span></div>
+  <div class="auth-brand">Ques<span>trix</span></div>
   <div class="auth-tagline">Smart Question Paper Generator</div>
 
   <div class="auth-card">
     <div class="auth-tabs">
       <button class="auth-tab on" id="tabLogin" onclick="setAuthMode('login')">Login</button>
-      <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Sign Up</button>
+      <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Sign In</button>
     </div>
     <button class="auth-google" onclick="signInGoogle()">
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
@@ -549,11 +549,11 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   <div class="card">
     <div class="sec-label"><div class="sec-num">5</div><div><div class="sec-title">Difficulty Distribution</div><div class="sec-desc">Set your preferred mix — optional</div></div></div>
     <div class="sl-wrap">
-      <div class="sl-row"><span class="sl-lbl sl-easy">Easy</span><input type="range" id="slEasy" style="touch-action:pan-x" min="0" max="100" step="10" value="30" oninput="syncDiff()"><span class="sl-val" id="vEasy">30%</span></div>
-      <div class="sl-row"><span class="sl-lbl sl-med">Medium</span><input type="range" id="slMedium" style="touch-action:pan-x" min="0" max="100" step="10" value="50" oninput="syncDiff()"><span class="sl-val" id="vMedium">50%</span></div>
-      <div class="sl-row"><span class="sl-lbl sl-hard">Hard</span><input type="range" id="slHard" style="touch-action:pan-x" min="0" max="100" step="10" value="20" oninput="syncDiff()"><span class="sl-val" id="vHard">20%</span></div>
+      <div class="sl-row"><span class="sl-lbl sl-easy">Easy</span><input type="range" id="slEasy" style="touch-action:none" min="0" max="100" step="10" value="30" oninput="syncDiff()"><span class="sl-val" id="vEasy">30%</span></div>
+      <div class="sl-row"><span class="sl-lbl sl-med">Medium</span><input type="range" id="slMedium" style="touch-action:none" min="0" max="100" step="10" value="50" oninput="syncDiff()"><span class="sl-val" id="vMedium">50%</span></div>
+      <div class="sl-row"><span class="sl-lbl sl-hard">Hard</span><input type="range" id="slHard" style="touch-action:none" min="0" max="100" step="10" value="20" oninput="syncDiff()"><span class="sl-val" id="vHard">20%</span></div>
     </div>
-    <div id="diffWarn" class="hidden mt8" style="font-size:12px;color:var(--gold)">ℹ Total is <span id="diffTotal">100</span>% — AI will proportionally adjust if not 100%</div>
+    <div id="diffWarn" class="hidden mt8" style="font-size:12px;font-weight:600">ℹ Difficulty total: <span id="diffTotal">100</span>% — you can set any values, generation works regardless</div>
   </div>
 
   <!-- BYOC CARD -->
@@ -687,7 +687,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
       <b style="color:var(--text)">📱 Android (Chrome):</b> Tap ⋮ menu → "Add to Home Screen" → Install<br>
       <b style="color:var(--text)">🍎 iPhone (Safari):</b> Tap Share ⬆ → "Add to Home Screen" → Add<br>
       <b style="color:var(--text)">💻 Desktop (Chrome/Edge):</b> Look for install icon (⊕) in address bar → Install<br><br>
-      <button class="tbtn primary" id="settingsInstallBtn" style="display:none" onclick="triggerInstall()">📲 Install Questrix Now</button>
+      <button class="tbtn primary" id="settingsInstallBtn" style="display:none" onclick="triggerInstall()">📲 Install Questrix on this Device</button>
     </div>
   </div>
 
@@ -732,15 +732,18 @@ var currentUser = null;
 var deferredInstallPrompt = null;
 var appShown = false;
 
-// Splash: shows for max 2.5s, then ALWAYS shows auth or app — never blank
+// Splash: max 2.5s then ALWAYS shows auth or app — never blank screen
 var splashTimer = setTimeout(function() {
-  // If auth hasn't shown anything yet, show login
-  if (!appShown && !document.getElementById('authScreen').classList.contains('on')) {
+  var auth = document.getElementById('authScreen');
+  var main = document.getElementById('mainApp');
+  // If nothing is showing, force the login screen
+  if (!appShown && auth && !auth.classList.contains('on') && (!main || main.style.display !== 'block')) {
     showAuth();
   } else {
     removeSplash();
   }
 }, 2500);
+
 function removeSplash() {
   clearTimeout(splashTimer);
   var s = document.getElementById('splash');
@@ -763,19 +766,52 @@ function showApp() {
   removeSplash();
   var a = document.getElementById('authScreen');
   var m = document.getElementById('mainApp');
+  // If transitioning FROM auth screen (login just happened), show brief loading
+  var wasOnAuth = a && a.classList.contains('on');
   if (a) a.classList.remove('on');
-  if (m) m.style.display = 'block';
-  updateAccountInfo();
-  if (!appShown) {
+
+  if (wasOnAuth && !appShown) {
+    // Show a brief post-login loading overlay before revealing the app
+    var overlay = document.createElement('div');
+    overlay.id = 'postLoginOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px';
+    overlay.innerHTML = '<svg width="48" height="48" viewBox="0 0 90 90"><rect width="90" height="90" rx="22" fill="#18291c"/><text x="45" y="62" font-family="Georgia,serif" font-size="52" font-style="italic" fill="#F5C350" text-anchor="middle">Q</text></svg>' +
+      '<div style="font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:700;color:var(--muted2);letter-spacing:0.08em;animation:pulse 1.5s infinite">Preparing your workspace…</div>' +
+      '<div style="display:flex;gap:6px;margin-top:8px"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>';
+    document.body.appendChild(overlay);
+    if (m) m.style.display = 'block';
+    // Build UI while overlay shows
     appShown = true;
     try { buildQTGrid(); } catch(e) {}
     try { buildTemplates(); } catch(e) {}
     try { loadPrefs(); } catch(e) {}
     try { syncDiff(); } catch(e) {}
+    // Remove overlay after 1.5s
+    setTimeout(function() {
+      overlay.style.transition = 'opacity 0.5s';
+      overlay.style.opacity = '0';
+      setTimeout(function() {
+        try { overlay.parentNode.removeChild(overlay); } catch(x) {}
+        updateAccountInfo();
+        try { loadHistory(); } catch(e) {}
+        try { updateStats(); } catch(e) {}
+        try { initKeys(); } catch(e) {}
+      }, 500);
+    }, 1500);
+  } else {
+    if (m) m.style.display = 'block';
+    updateAccountInfo();
+    if (!appShown) {
+      appShown = true;
+      try { buildQTGrid(); } catch(e) {}
+      try { buildTemplates(); } catch(e) {}
+      try { loadPrefs(); } catch(e) {}
+      try { syncDiff(); } catch(e) {}
+    }
+    try { loadHistory(); } catch(e) {}
+    try { updateStats(); } catch(e) {}
+    try { initKeys(); } catch(e) {}
   }
-  try { loadHistory(); } catch(e) {}
-  try { updateStats(); } catch(e) {}
-  try { initKeys(); } catch(e) {}
 }
 function updateAccountInfo() {
   var el = document.getElementById('accountInfo');
@@ -787,27 +823,39 @@ function updateAccountInfo() {
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredInstallPrompt = e;
+  // Show install banner if not dismissed
   if (!localStorage.getItem('qx_dismissed_install')) {
     var banner = document.getElementById('installBanner');
     if (banner) banner.classList.add('on');
   }
-  // Show install button in settings too
-  var settingsBtn = document.getElementById('settingsInstallBtn');
-  if (settingsBtn) settingsBtn.style.display = 'inline-flex';
+  // Show ALL install buttons wherever they exist on the page
+  ['settingsInstallBtn', 'authInstallBtn', 'headerInstallBtn'].forEach(function(id) {
+    var btn = document.getElementById(id);
+    if (btn) { btn.style.display = 'inline-flex'; btn.onclick = triggerInstall; }
+  });
   var btn1 = document.getElementById('installBannerBtn');
-  var btn2 = document.getElementById('authInstallBtn');
   if (btn1) btn1.onclick = triggerInstall;
-  if (btn2) { btn2.style.display = 'flex'; btn2.onclick = triggerInstall; }
 });
 window.addEventListener('appinstalled', function() {
+  deferredInstallPrompt = null;
   var b = document.getElementById('installBanner');
   if (b) b.classList.remove('on');
-  deferredInstallPrompt = null;
+  ['settingsInstallBtn','authInstallBtn','headerInstallBtn'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  showToast('✅ Questrix installed successfully!', 'ok');
 });
 function triggerInstall() {
-  if (!deferredInstallPrompt) return;
+  if (!deferredInstallPrompt) {
+    showToast('To install: use browser menu → "Add to Home Screen"', 'info');
+    return;
+  }
   deferredInstallPrompt.prompt();
-  deferredInstallPrompt.userChoice.then(function() { deferredInstallPrompt = null; });
+  deferredInstallPrompt.userChoice.then(function(choice) {
+    if (choice.outcome === 'accepted') showToast('Installing Questrix…', 'ok');
+    deferredInstallPrompt = null;
+  });
 }
 function dismissInstall() {
   var b = document.getElementById('installBanner');
@@ -910,13 +958,12 @@ function startAuth(isOAuthReturn) {
     }
   });
 
-  // Safety net: if nothing shows within 3s, force show auth
+  // Universal safety net — always shows something within 3s no matter what
   setTimeout(function() {
     var auth = document.getElementById('authScreen');
     var main = document.getElementById('mainApp');
-    if (!appShown && auth && !auth.classList.contains('on') &&
-        main && main.style.display !== 'block') {
-      console.warn('Auth safety net triggered — forcing login screen');
+    if (!appShown && auth && !auth.classList.contains('on') && (!main || main.style.display !== 'block')) {
+      console.warn('Safety net: forcing login screen');
       showAuth();
     }
   }, 3000);
@@ -938,7 +985,7 @@ function setAuthMode(mode) {
   var isSignup = mode === 'signup';
   document.getElementById('tabLogin').classList.toggle('on', !isSignup);
   document.getElementById('tabSignup').classList.toggle('on', isSignup);
-  document.getElementById('authSubmit').textContent = isSignup ? 'Sign Up' : 'Login';
+  document.getElementById('authSubmit').textContent = isSignup ? 'Sign In' : 'Login';
   var confirm = document.getElementById('authPassConfirm');
   if (confirm) confirm.classList.toggle('hidden', !isSignup);
   var forgot = document.getElementById('authForgotLink');
@@ -969,7 +1016,7 @@ async function signInEmail() {
   if (pass.length < 6) { showToast('Password must be at least 6 characters', 'err'); return; }
 
   document.getElementById('authSubmit').disabled = true;
-  document.getElementById('authSubmit').textContent = authMode === 'signup' ? 'Creating…' : 'Logging in…';
+  document.getElementById('authSubmit').textContent = authMode === 'signup' ? 'Creating account…' : 'Logging in…';
 
   try {
     var error;
@@ -978,7 +1025,7 @@ async function signInEmail() {
       if (confirmPass && confirmPass !== pass) {
         showToast('Passwords do not match', 'err');
         document.getElementById('authSubmit').disabled = false;
-        document.getElementById('authSubmit').textContent = 'Create Account';
+        document.getElementById('authSubmit').textContent = 'Sign In';
         return;
       }
       var res = await supa.auth.signUp({ email: email, password: pass });
@@ -990,8 +1037,8 @@ async function signInEmail() {
       if (error) {
         var em = (error.message || '').toLowerCase();
         if (em.includes('invalid login') || em.includes('invalid credentials') || em.includes('user not found')) {
-          showToast('No account found — switching to Sign Up…', 'info');
-          setTimeout(function() { setAuthMode('signup'); }, 800);
+          showToast('No account found — switching to Sign In to create your account…', 'info');
+          setTimeout(function() { setAuthMode('signup'); }, 900);
           error = null;
         }
       }
@@ -1264,8 +1311,15 @@ function syncDiff() {
   document.getElementById('vHard').textContent = h + '%';
   var t = e + m + h;
   document.getElementById('diffTotal').textContent = t;
-  // Show info message if not 100%, but never block generation
-  document.getElementById('diffWarn').classList.toggle('hidden', t === 100);
+  // Show info — never block generation, any total is fine
+  var warn = document.getElementById('diffWarn');
+  if (warn) {
+    warn.classList.toggle('hidden', t === 100);
+    // Update message color based on total
+    if (t > 100) warn.style.color = 'var(--terra)';
+    else if (t < 100) warn.style.color = 'var(--gold)';
+    else warn.style.color = 'var(--sage)';
+  }
 }
 
 // ── FILE UPLOAD (supports ALL file types including PDF, DOCX, images) ──
@@ -1287,8 +1341,14 @@ function processFiles(files) {
     var chip = document.createElement('div');
     chip.className = 'chip';
     chip.id = 'chip-' + f.name.replace(/[^a-z0-9]/gi, '_');
-    chip.innerHTML = '📄 ' + f.name + ' <span class="chip-x">✕</span>';
-    chip.querySelector('.chip-x').addEventListener('click',function(){ removeFile(f.name, this); });
+    chip.innerHTML = '📄 ' + f.name + ' <span class="chip-x" title="Remove">✕</span>';
+    (function(chipEl, fileName) {
+      chipEl.querySelector('.chip-x').addEventListener('click', function(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        removeFile(fileName, chipEl);
+      });
+    })(chip, f.name);
     row.appendChild(chip);
 
     // Save file to Supabase Storage
@@ -1333,9 +1393,8 @@ function processFiles(files) {
   });
   document.getElementById('fileInput').value = '';
 }
-function removeFile(name, el) {
-  var chip = el.parentElement;
-  if (chip) chip.remove();
+function removeFile(name, chipEl) {
+  if (chipEl) chipEl.remove();
   // Remove from uploadedText
   var marker = '---FILE: ' + name + '---';
   var idx = uploadedText.indexOf(marker);

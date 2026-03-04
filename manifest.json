@@ -1,6 +1,6 @@
 {
-  "name": "Smart Buddy — AI Question Paper Generator",
-  "short_name": "Smart Buddy",
+  "name": "Questrix — Smart Question Paper Generator",
+  "short_name": "Questrix",
   "description": "Generate professional question papers with AI. Supports CBSE, JEE, NEET, University and more.",
   "start_url": "/",
   "display": "standalone",
