@@ -651,7 +651,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <div class="card" style="padding:20px 22px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
         <span style="width:10px;height:10px;border-radius:50%;background:#6BAF8A;box-shadow:0 0 10px #6BAF8A;display:inline-block;flex-shrink:0;animation:pulse 2s infinite"></span>
-        <span style="font-size:14px;font-weight:800;color:var(--text)">Smart Buddy AI — Active</span>
+        <span style="font-size:14px;font-weight:800;color:var(--text)">Questrix AI — Active</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted2)">
@@ -1105,10 +1105,23 @@ async function signInEmail() {
       error = res2.error;
       if (error) {
         var em = (error.message || '').toLowerCase();
-        if (em.includes('invalid login') || em.includes('invalid credentials') || em.includes('user not found')) {
-          showToast('No account found — switching to Sign In to create your account…', 'info');
-          setTimeout(function() { setAuthMode('signup'); }, 900);
-          error = null;
+        // Catch ALL cases where the user simply doesn't have an account yet
+        var isNewUser = em.includes('invalid login') ||
+                        em.includes('invalid credentials') ||
+                        em.includes('user not found') ||
+                        em.includes('no user') ||
+                        em.includes('email not found') ||
+                        em.includes('account not found') ||
+                        em.includes('not registered') ||
+                        (em.includes('email not confirmed') && !em.includes('wrong') && !em.includes('password'));
+        if (isNewUser) {
+          // New user tried Login — silently switch to Sign In tab
+          setAuthMode('signup');
+          document.getElementById('authPass').value = '';
+          var confirmEl = document.getElementById('authPassConfirm');
+          if (confirmEl) confirmEl.value = '';
+          showToast('No account found. Please Sign In to create your account.', 'info');
+          error = null; // clear so no second toast fires
         }
       }
     }
@@ -1588,7 +1601,7 @@ async function generate() {
   var result = '', model = '';
 
   try {
-    document.getElementById('aiTag').textContent = '● Gemini 1.5 Flash';
+    document.getElementById('aiTag').textContent = '● Generating…';
     var aiRes = await callAI(prompt);
     result = aiRes.result;
     model = aiRes.model;
@@ -1753,7 +1766,7 @@ async function callAI(prompt) {
     }
     var data = await res.json();
     if (!data.result) throw new Error('Empty response from server');
-    return { result: data.result, model: data.model || 'Smart Buddy AI' };
+    return { result: data.result, model: data.model || 'Questrix AI' };
 
   } catch(e) {
     clearTimeout(timeoutId);
