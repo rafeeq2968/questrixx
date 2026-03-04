@@ -1437,6 +1437,19 @@ function filterTemplates() {
   var empty = document.getElementById('tmplEmpty');
   if (empty) empty.classList.toggle('on', visible === 0);
 }
+function loadTemplate(idx) {
+  var t = TEMPLATES[idx];
+  if (!t || !t.params) { showToast('Template not found', 'err'); return; }
+  showView('gen');
+  // Small delay to let view switch before filling fields
+  setTimeout(function() {
+    loadParams(t.params);
+    showToast('✅ Template loaded — review and click Generate!', 'ok');
+    // Scroll to top of the gen view
+    try { window.scrollTo({top: 0, behavior: 'smooth'}); } catch(e) {}
+  }, 120);
+}
+
 function loadParams(p) {
   // STEP 1: Reset ALL QT cards to 0 first (so template replaces, not adds)
   QT.forEach(function(q) {
@@ -1816,15 +1829,17 @@ async function generate() {
     var msg = e.message || 'Generation failed';
     if (msg === '__CANCELLED__') return; // user started a new generation — no error shown
     if (msg.includes('not configured') || msg.includes('Contact support') || msg === 'NO_KEY') {
-      showToast('⚠️ Generation failed: API keys not set on Vercel. Go to Vercel → Settings → Environment Variables and add GEMINI_API_KEY + GROQ_API_KEY, then Redeploy.', 'err');
+      showToast('⚠️ API keys not set on Vercel. Go to Vercel → Settings → Environment Variables and add GEMINI_API_KEY + GROQ_API_KEY, then Redeploy.', 'err');
     } else if (msg.includes('401') || msg.includes('invalid') || msg.toLowerCase().includes('api key')) {
-      showToast('❌ Generation failed. Please try again.', 'err');
-    } else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate')) {
-      showToast('⏳ AI service is busy — please retry in a moment.', 'err');
-    } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) {
-      showToast('❌ Network error — check your internet connection.', 'err');
+      showToast('❌ API key error. Please contact support or check Vercel environment variables.', 'err');
+    } else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate limit')) {
+      showToast('⏳ AI is overloaded — retrying automatically. If this continues, wait 1 minute and try again.', 'err');
+    } else if (msg.includes('Network error') || msg.includes('internet')) {
+      showToast('❌ No internet connection — please check your network and try again.', 'err');
+    } else if (msg.includes('500') || msg.includes('Server error')) {
+      showToast('⚠️ Server issue — please try again in a few seconds.', 'err');
     } else {
-      showToast('❌ ' + msg, 'err');
+      showToast('❌ ' + msg.slice(0, 120), 'err');
     }
     return;
   }
@@ -1959,44 +1974,58 @@ async function callAI(prompt) {
 
   var safePrompt = prompt.length > 45000 ? prompt.substring(0, 45000) + '\n\n[Source content trimmed. Generate complete paper from above specs.]' : prompt;
 
-  async function attempt() {
+  async function attempt(attemptNum) {
     var ctrl = new AbortController();
     _activeController = ctrl;
-    var res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: safePrompt }),
-      signal: ctrl.signal
-    });
+
+    // Update progress message on retry
+    if (attemptNum > 1) {
+      var stepEl = document.getElementById('progStep');
+      if (stepEl) stepEl.textContent = 'Retrying with backup AI model…';
+    }
+
+    var res;
+    try {
+      res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: safePrompt }),
+        signal: ctrl.signal
+      });
+    } catch(fetchErr) {
+      if (fetchErr.name === 'AbortError') throw new Error('__CANCELLED__');
+      throw new Error('Network error — check your internet connection and try again.');
+    }
+
     if (!res.ok) {
-      var errData = await res.json().catch(function() { return {}; });
-      var errMsg = errData.error || 'Server error ' + res.status;
-      if (errData.detail) errMsg += ' (' + errData.detail + ')';
+      var errData = {};
+      try { errData = await res.json(); } catch(x) {}
+      var errMsg = errData.error || ('Server error ' + res.status);
+      if (errData.detail) errMsg += ' | ' + errData.detail;
       throw new Error(errMsg);
     }
-    var data = await res.json();
-    if (!data.result) throw new Error('Empty response from server');
+
+    var data;
+    try { data = await res.json(); } catch(x) { throw new Error('Invalid response from server. Please try again.'); }
+    if (!data.result || !data.result.trim()) throw new Error('Empty response from AI. Please try again.');
     return { result: data.result, model: data.model || 'Questrix AI' };
   }
 
-  try {
-    return await attempt();
-  } catch(e) {
-    // If this was cancelled because user started a NEW generation — just stop silently
-    if (e.name === 'AbortError') {
-      throw new Error('__CANCELLED__');
+  // Try up to 3 times automatically before giving up
+  var lastErr;
+  for (var i = 1; i <= 3; i++) {
+    try {
+      return await attempt(i);
+    } catch(e) {
+      if (e.name === 'AbortError' || e.message === '__CANCELLED__') throw new Error('__CANCELLED__');
+      lastErr = e;
+      // Don't retry on cancellation or auth errors
+      if (e.message && (e.message.includes('configured') || e.message.includes('401') || e.message.includes('403'))) break;
+      // Wait briefly before retry (500ms, then 1s)
+      if (i < 3) await new Promise(function(r) { setTimeout(r, i * 500); });
     }
-    // On any network/timeout error — retry once automatically, no error shown to user
-    if (e.message && (e.message.includes('network') || e.message.includes('fetch') || e.message.includes('Failed') || e.message.includes('timeout') || e.message.includes('500'))) {
-      try {
-        return await attempt();
-      } catch(e2) {
-        if (e2.name === 'AbortError') throw new Error('__CANCELLED__');
-        throw e2;
-      }
-    }
-    throw e;
   }
+  throw lastErr || new Error('Generation failed. Please try again.');
 }
 
 // Legacy stubs — kept so nothing breaks if called elsewhere
