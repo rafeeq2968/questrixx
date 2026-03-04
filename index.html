@@ -34,7 +34,7 @@ body{font-family:'Cabinet Grotesk',system-ui,sans-serif;background:var(--bg);col
 #cursorDot.big{width:18px;height:18px;opacity:0.5}
 @media(hover:none),(pointer:coarse){#cursorDot{display:none!important}}
 /* Mobile touch dot — follows finger */
-#mobileDot{display:none;position:fixed;width:12px;height:12px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:999999;box-shadow:0 0 10px var(--gold-glow),0 0 20px rgba(232,168,56,0.3);opacity:0;top:0;left:0;will-change:transform;transition:opacity 0.15s ease}
+#mobileDot{display:none;position:fixed;width:11px;height:11px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:999999;box-shadow:0 0 8px rgba(232,168,56,0.6);opacity:0;top:0;left:0;will-change:transform}
 @media(hover:none),(pointer:coarse){#mobileDot{display:block}}
 #splash{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.7s var(--ease)}
 #splash.out{opacity:0;pointer-events:none}
@@ -1029,28 +1029,26 @@ document.addEventListener('DOMContentLoaded', function() {
   // ── Mobile touch dot — follows finger exactly like desktop cursor ──
   var mdot = document.getElementById('mobileDot');
   if (mdot) {
-    var mdotHideTimer = null;
-    function moveMdot(x, y) {
-      mdot.style.transform = 'translate(' + (x - 6) + 'px,' + (y - 6) + 'px)';
+    var _mx = 0, _my = 0, _mraf = null, _mVisible = false;
+    function _rafUpdate() {
+      mdot.style.transform = 'translate(' + (_mx - 5) + 'px,' + (_my - 5) + 'px)';
+      _mraf = null;
+    }
+    function _scheduleMove(x, y) {
+      _mx = x; _my = y;
+      if (!_mraf) _mraf = requestAnimationFrame(_rafUpdate);
     }
     document.addEventListener('touchstart', function(e) {
-      var t = e.touches[0];
-      if (!t) return;
-      clearTimeout(mdotHideTimer);
-      moveMdot(t.clientX, t.clientY);
-      mdot.style.opacity = '1';
+      var t = e.touches[0]; if (!t) return;
+      _scheduleMove(t.clientX, t.clientY);
+      if (!_mVisible) { mdot.style.opacity = '1'; _mVisible = true; }
     }, {passive: true});
     document.addEventListener('touchmove', function(e) {
-      var t = e.touches[0];
-      if (!t) return;
-      moveMdot(t.clientX, t.clientY);
+      var t = e.touches[0]; if (!t) return;
+      _scheduleMove(t.clientX, t.clientY);
     }, {passive: true});
-    document.addEventListener('touchend', function() {
-      mdotHideTimer = setTimeout(function() { mdot.style.opacity = '0'; }, 180);
-    }, {passive: true});
-    document.addEventListener('touchcancel', function() {
-      mdot.style.opacity = '0';
-    }, {passive: true});
+    document.addEventListener('touchend',   function() { mdot.style.opacity = '0'; _mVisible = false; }, {passive: true});
+    document.addEventListener('touchcancel',function() { mdot.style.opacity = '0'; _mVisible = false; }, {passive: true});
   }
 
   // ── Slider touch shield: block QT grid touches during slider drag ──
