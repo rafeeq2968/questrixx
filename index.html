@@ -7,11 +7,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Smart Buddy">
-<meta name="description" content="Smart Buddy — AI Question Paper Generator">
+<meta name="apple-mobile-web-app-title" content="Questrix">
+<meta name="description" content="Questrix — Smart Question Paper Generator">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-512.png">
-<title>Smart Buddy — AI Question Paper Generator</title>
+<title>Questrix — Smart Question Paper Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cabinet+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -333,14 +333,14 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <circle cx="62" cy="57" r="2.5" fill="#fff" opacity="0.8"/>
     <rect x="24" y="69" width="42" height="2.5" rx="1.25" fill="url(#sg1)" opacity="0.7"/>
   </svg>
-  <div class="splash-wordmark">Smart <b>Buddy</b></div>
-  <div class="splash-tagline">AI Question Paper Generator</div>
+  <div class="splash-wordmark">Ques<b>trix</b></div>
+  <div class="splash-tagline">Smart Question Paper Generator</div>
   <div class="splash-loader"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>
 </div>
 
 <!-- PWA INSTALL BANNER -->
 <div id="installBanner">
-  <div class="ib-text">📲 Install <span>Smart Buddy</span> on your device for instant access</div>
+  <div class="ib-text">📲 Install <span>Questrix</span> on your device for instant access</div>
   <div class="ib-btns">
     <button class="ib-install" id="installBannerBtn">Install</button>
     <button class="ib-dismiss" onclick="dismissInstall()">✕</button>
@@ -357,8 +357,8 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <rect width="90" height="90" rx="22" fill="url(#ab1)"/>
     <text x="45" y="62" font-family="Georgia,serif" font-size="52" font-weight="400" font-style="italic" fill="url(#ab2)" text-anchor="middle">Q</text>
   </svg>
-  <div class="auth-brand">Smart <span>Buddy</span></div>
-  <div class="auth-tagline">AI Question Paper Generator</div>
+  <div class="auth-brand">Ques<span>trix</span></div>
+  <div class="auth-tagline">Smart Question Paper Generator</div>
 
   <div class="auth-card">
     <div class="auth-tabs">
@@ -400,7 +400,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
       <circle cx="62" cy="57" r="2.5" fill="#fff" opacity="0.8"/>
       <rect x="24" y="69" width="42" height="2.5" rx="1.25" fill="url(#wl3)" opacity="0.7"/>
     </svg>
-    <div class="wm-text">Smart <span>Buddy</span></div>
+    <div class="wm-text">Ques<span>trix</span></div>
   </div>
   <a class="nav-item active" href="#" onclick="showView('gen');return false"><span class="ni">✦</span><span class="nl">Generate</span></a>
   <a class="nav-item" href="#" onclick="showView('history');return false"><span class="ni">📋</span><span class="nl">History</span></a>
@@ -662,7 +662,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
       <b style="color:var(--text)">📱 Android (Chrome):</b> Tap ⋮ menu → "Add to Home Screen" → Install<br>
       <b style="color:var(--text)">🍎 iPhone (Safari):</b> Tap Share ⬆ → "Add to Home Screen" → Add<br>
       <b style="color:var(--text)">💻 Desktop (Chrome/Edge):</b> Look for install icon (⊕) in address bar → Install<br><br>
-      <button class="tbtn primary" id="settingsInstallBtn" style="display:none" onclick="triggerInstall()">📲 Install Smart Buddy Now</button>
+      <button class="tbtn primary" id="settingsInstallBtn" style="display:none" onclick="triggerInstall()">📲 Install Questrix Now</button>
     </div>
   </div>
 
@@ -728,44 +728,23 @@ function showAuth() {
 }
 
 function showApp() {
+  removeSplash();
   var a = document.getElementById('authScreen');
+  var m = document.getElementById('mainApp');
   if (a) a.classList.remove('on');
-
-  // Show a brief post-login splash before entering main app
-  var postSplash = document.getElementById('postSplash');
-  if (!postSplash) {
-    postSplash = document.createElement('div');
-    postSplash.id = 'postSplash';
-    postSplash.style.cssText = 'position:fixed;inset:0;z-index:99990;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity 0.6s ease';
-    postSplash.innerHTML = '<svg style="width:70px;height:70px;animation:splashPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both" viewBox="0 0 90 90" fill="none"><defs><linearGradient id="ps1" x1="0" y1="0" x2="90" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#18291c"/><stop offset="100%" stop-color="#0d1a10"/></linearGradient><linearGradient id="ps2" x1="20" y1="20" x2="70" y2="70" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#F5C350"/><stop offset="100%" stop-color="#C47C1A"/></linearGradient></defs><rect width="90" height="90" rx="22" fill="url(#ps1)"/><text x="45" y="62" font-family="Georgia,serif" font-size="52" font-weight="400" font-style="italic" fill="url(#ps2)" text-anchor="middle">Q</text></svg>'
-      + '<div style="font-family:\'Instrument Serif\',serif;font-size:1.8rem;font-style:italic;color:var(--text);animation:fadeUp 0.4s ease 0.2s both">Smart <b style="color:var(--gold);font-style:normal">Buddy</b></div>'
-      + '<div style="display:flex;gap:7px;margin-top:8px;animation:fadeUp 0.3s ease 0.4s both"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>';
-    document.body.appendChild(postSplash);
+  if (m) m.style.display = 'block';
+  updateAccountInfo();
+  if (!appShown) {
+    appShown = true;
+    try { buildQTGrid(); } catch(e) {}
+    try { buildTemplates(); } catch(e) {}
+    try { loadPrefs(); } catch(e) {}
+    try { syncDiff(); } catch(e) {}
   }
-  postSplash.style.opacity = '1';
-  postSplash.style.display = 'flex';
-
-  setTimeout(function() {
-    var m = document.getElementById('mainApp');
-    if (m) m.style.display = 'block';
-    updateAccountInfo();
-    if (!appShown) {
-      appShown = true;
-      try { buildQTGrid(); } catch(e) {}
-      try { buildTemplates(); } catch(e) {}
-      try { loadPrefs(); } catch(e) {}
-      try { syncDiff(); } catch(e) {}
-    }
-    try { loadHistory(); } catch(e) {}
-    try { updateStats(); } catch(e) {}
-    try { initKeys(); } catch(e) {}
-
-    // Fade out post-login splash
-    postSplash.style.opacity = '0';
-    setTimeout(function() { postSplash.style.display = 'none'; }, 650);
-  }, 1800);
+  try { loadHistory(); } catch(e) {}
+  try { updateStats(); } catch(e) {}
+  try { initKeys(); } catch(e) {}
 }
-
 function updateAccountInfo() {
   var el = document.getElementById('accountInfo');
   if (!el || !currentUser) return;
@@ -1323,7 +1302,7 @@ async function generate() {
 
   try {
     // Try serverless function first (keys hidden server-side)
-    document.getElementById('aiTag').textContent = '● Smart Buddy AI';
+    document.getElementById('aiTag').textContent = '● Questrix AI';
     var aiRes = await callAI(prompt);
     result = aiRes.result; model = aiRes.model;
   } catch(e) {
@@ -1384,7 +1363,7 @@ async function callAI(prompt) {
   }
   var data = await res.json();
   if (!data.result) throw new Error('Empty response from AI');
-  return { result: data.result, model: data.model || 'Smart Buddy AI' };
+  return { result: data.result, model: data.model || 'Questrix AI' };
 }
 
 // Keep these as fallbacks if serverless not set up yet

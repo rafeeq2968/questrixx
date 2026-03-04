@@ -1,7 +1,7 @@
 {
-  "name": "Smart Buddy — AI Question Paper Generator",
-  "short_name": "Smart Buddy",
-  "description": "Generate professional question papers with AI — school, college, competitive exams.",
+  "name": "Questrix — Smart Question Paper Generator",
+  "short_name": "Questrix",
+  "description": "Generate professional question papers with AI.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080f0b",
@@ -9,27 +9,11 @@
   "orientation": "any",
   "scope": "/",
   "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "categories": ["education", "productivity"],
   "shortcuts": [
-    {
-      "name": "Generate Paper",
-      "short_name": "Generate",
-      "description": "Generate a new question paper",
-      "url": "/?view=gen",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
-    }
+    { "name": "Generate Paper", "short_name": "Generate", "url": "/?view=gen", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
   ]
 }
