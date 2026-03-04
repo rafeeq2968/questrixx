@@ -1,5 +1,5 @@
 /* Questrix Service Worker — v8 (clears all old broken caches) */
-const CACHE = 'questrix-v8';
+const CACHE = 'questrix-v9';
 const ASSETS = ['/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', e => {

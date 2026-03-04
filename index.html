@@ -1648,8 +1648,7 @@ function renderPaper(text, model, p) {
 
 // Format plain-text paper into styled HTML for display
 function formatPaperHTML(text) {
-  var lines = text.split('
-');
+  var lines = text.split('\n');
   var html = '';
   var inHeader = true;
   var hCount = 0;
@@ -1681,7 +1680,7 @@ function formatPaperHTML(text) {
     }
 
     // Header block (institution, exam name, etc)
-    if (inHeader && hCount < 10 && !/^Qd+./.test(l) && !/^SECTION/i.test(l) && !/^GENERAL INSTRUCTIONS/i.test(l)) {
+    if (inHeader && hCount < 10 && !/^Q\d+\./.test(l) && !/^SECTION/i.test(l) && !/^GENERAL INSTRUCTIONS/i.test(l)) {
       var fs2 = hCount===0 ? '17px' : hCount<3 ? '13px' : '11px';
       var fw2 = hCount<3 ? '800' : '500';
       html += '<div style="text-align:center;font-size:' + fs2 + ';font-weight:' + fw2 + ';line-height:1.6;color:#1a1a1a;margin-bottom:2px">' + lesc + '</div>';
@@ -1703,16 +1702,16 @@ function formatPaperHTML(text) {
     }
 
     // Questions Q1. Q2.
-    if (/^Qd+./.test(l)) {
+    if (/^Q\d+\./.test(l)) {
       var marks='', qtext=lesc;
-      var mm=lesc.match(/[([d.]+ ?[Mm]arks?)]/);
+      var mm=lesc.match(/\[(\d[\d.]* ?[Mm]arks?)\]/);
       if(mm){marks='<span style="float:right;font-size:11px;color:#666;font-weight:500">' + mm[1] + '</span>';qtext=lesc.replace(mm[0],'').trim();}
       html += '<div style="font-weight:700;font-size:13px;margin-top:13px;margin-bottom:4px;line-height:1.7">' + marks + qtext + '</div>';
       continue;
     }
 
     // MCQ options
-    if (/^([a-d])|^[a-d])/.test(l)) {
+    if (/^[a-dA-D][.)]/i.test(l)) {
       html += '<div style="padding-left:24px;font-size:12.5px;line-height:1.9;color:#333">' + esc + '</div>';
       continue;
     }
@@ -1734,9 +1733,7 @@ function formatPaperHTML(text) {
 // Users NEVER see or touch API keys. All calls go through /api/generate.
 async function callAI(prompt) {
   // Trim very large prompts to avoid hitting server limits
-  var safePrompt = prompt.length > 45000 ? prompt.substring(0, 45000) + '
-
-[Source content trimmed. Generate complete paper from above specs.]' : prompt;
+  var safePrompt = prompt.length > 45000 ? prompt.substring(0, 45000) + '\n\n[Source content trimmed. Generate complete paper from above specs.]' : prompt;
 
   var controller = new AbortController();
   var timeoutId = setTimeout(function() { controller.abort(); }, 55000); // 55s timeout
@@ -1794,8 +1791,7 @@ async function dlPDF() {
       doc.line(mL, yy, PW-mR, yy);
     }
 
-    var lines = editedText.split('
-');
+    var lines = editedText.split('\n');
     var inHeader = true;
     var headerLines = [];
     var headerEnd = 0;
@@ -1805,7 +1801,7 @@ async function dlPDF() {
       var l = lines[i].trim();
       if (!l) continue;
       if (/^[═─]{5,}/.test(l)) { headerEnd=i; break; }
-      if (/^Qd+./.test(l) || /^SECTION [A-Z]/i.test(l) || /^GENERAL INSTRUCTIONS/i.test(l)) { headerEnd=i; break; }
+      if (/^Q\d+\./.test(l) || /^SECTION [A-Z]/i.test(l) || /^GENERAL INSTRUCTIONS/i.test(l)) { headerEnd=i; break; }
       headerLines.push(l);
       headerEnd=i+1;
     }
@@ -1924,13 +1920,13 @@ async function dlPDF() {
       }
 
       // Question number Q1. Q2. etc
-      if (/^Qd+./.test(l)) {
+      if (/^Q\d+\./.test(l)) {
         checkPage(12);
         y += 3;
         // Parse marks tag [X Mark] [X Marks] at end
         var marksTag = '';
         var qText = l;
-        var mMatch = l.match(/[(d+.?d*s*[Mm]arks?)]/);
+        var mMatch = l.match(/\[(\d+\.?\d*\s*[Mm]arks?)\]/);
         if (mMatch) { marksTag = mMatch[0]; qText = l.replace(mMatch[0],'').trim(); }
         doc.setFont('helvetica','bold');
         doc.setFontSize(10.5);
@@ -1953,7 +1949,7 @@ async function dlPDF() {
       }
 
       // MCQ options (a) (b) (c) (d)
-      if (/^([a-d])|^[a-d])/.test(l)) {
+      if (/^[a-dA-D][.)]/i.test(l)) {
         checkPage(7);
         doc.setFont('helvetica','normal');
         doc.setFontSize(10);
@@ -1975,7 +1971,7 @@ async function dlPDF() {
       }
 
       // Answer key entries Q1.(b) style
-      if (/^Qd+.(/.test(l) || /^d+.s+(/.test(l) || /^Qd+.s+[A-D]/.test(l)) {
+      if (/^Q\d+\.\(/.test(l) || /^\d+\.\s+\(/.test(l) || /^Q\d+\.\s+[A-D]/.test(l)) {
         checkPage(6);
         doc.setFont('courier','normal');
         doc.setFontSize(9.5);
