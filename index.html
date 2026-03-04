@@ -255,6 +255,20 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 .tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
 .tmpl-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:20px;cursor:pointer;transition:var(--t)}
 .tmpl-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.3)}
+.tmpl-card.hidden{display:none}
+/* Template search + filter */
+.tmpl-controls{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.tmpl-search-wrap{position:relative}
+.tmpl-search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none}
+#tmplSearch{width:100%;padding:11px 14px 11px 38px;background:var(--s2);border:1.5px solid var(--b2);border-radius:10px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:500;outline:none;transition:var(--t);-webkit-appearance:none}
+#tmplSearch:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
+#tmplSearch::placeholder{color:var(--muted)}
+.tmpl-cats{display:flex;flex-wrap:wrap;gap:7px}
+.tmpl-cat{padding:6px 14px;border-radius:20px;border:1.5px solid var(--b2);background:transparent;color:var(--muted2);font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:var(--t);white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.tmpl-cat.on{background:var(--gold);border-color:var(--gold);color:#000}
+.tmpl-cat:not(.on):hover{border-color:var(--gold-dim);color:var(--text)}
+.tmpl-empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;font-weight:600;display:none}
+.tmpl-empty.on{display:block}
 .tmpl-ico{font-size:2rem;margin-bottom:10px}.tmpl-name{font-size:14px;font-weight:800;margin-bottom:4px}
 .tmpl-desc{font-size:11px;color:var(--muted2);line-height:1.6;margin:6px 0 12px}
 .tmpl-cta{font-size:12px;font-weight:700;color:var(--gold)}
@@ -637,8 +651,16 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   <div class="page-hd">
     <div class="eyebrow"><span class="eyebrow-dot"></span>Quick Start</div>
     <h1 class="page-title"><span>Templates</span> Library</h1>
-    <p class="page-sub">Pre-configured setups for common exam formats. Click any to load instantly.</p>
+    <p class="page-sub">Search or filter by category — click any template to load it instantly.</p>
   </div>
+  <div class="tmpl-controls">
+    <div class="tmpl-search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="tmplSearch" type="search" placeholder="Search templates… e.g. JEE, CBSE, bank, maths" oninput="filterTemplates()" autocomplete="off">
+    </div>
+    <div class="tmpl-cats" id="tmplCats"></div>
+  </div>
+  <div class="tmpl-empty" id="tmplEmpty">No templates found. Try a different search or category.</div>
   <div class="tmpl-grid" id="tmplGrid"></div>
 </div>
 
@@ -1240,6 +1262,103 @@ var TEMPLATES = [
     instructions:'General Aptitude: 10 Qs (15 marks). Technical: 55 Qs (85 marks). 1-mark MCQ: -1/3. 2-mark MCQ: -2/3. NAT: no negative.',
     easy:'25',medium:'50',hard:'25',
     qtypes:{mcq:{c:55,m:1},numerical:{c:10,m:2}}}},
+
+  {icon:'🏆',name:'IBPS Bank PO Mock',badge:'Banking',desc:'100 Qs · 100 marks · 1 hr · Reasoning+Quant+English+GA',p:{
+    examName:'IBPS PO Preliminary Examination Mock Test',subject:'Reasoning Ability, Quantitative Aptitude, English Language',level:'IBPS / Bank PO',
+    examType:'Mock / Practice Test',totalMarks:'100',timeLimit:'60',sections:'3',
+    negMark:true,negVal:'0.25 mark',answerKey:true,
+    topics:'Reasoning: Seating Arrangement, Puzzles, Syllogism, Coding-Decoding. Quant: Number Series, Data Interpretation, Simplification, Quadratic Equations. English: Reading Comprehension, Cloze Test, Error Detection.',
+    instructions:'100 questions of 1 mark each. 0.25 mark deducted for each wrong answer. Time limit: 60 minutes.',
+    easy:'35',medium:'45',hard:'20',
+    qtypes:{mcq:{c:100,m:1}}}},
+  {icon:'🧮',name:'Class 10 Maths Board',badge:'School',desc:'MCQ+VSA+SA+LA · 80 marks · 3 hrs · CBSE 2024-25 Pattern',p:{
+    examName:'Class 10 Mathematics Board Examination',subject:'Mathematics',level:'Class 9–10 (CBSE / State)',
+    examType:'Final / Annual Exam',totalMarks:'80',timeLimit:'180',sections:'5',
+    negMark:false,answerKey:true,
+    topics:'Real Numbers, Polynomials, Linear Equations, Quadratic Equations, Arithmetic Progression, Triangles, Coordinate Geometry, Trigonometry, Circles, Areas, Surface Areas & Volumes, Statistics, Probability',
+    instructions:'Section A: 20 MCQ+AR (1 mk each). Section B: 5 VSA (2 mk each). Section C: 6 SA (3 mk each). Section D: 4 LA (5 mk each). Section E: 3 Case-Based (4 mk each). Internal choice in Sections C, D, E.',
+    easy:'30',medium:'50',hard:'20',
+    qtypes:{mcq:{c:18,m:1},assert:{c:2,m:1},short:{c:6,m:3},long:{c:4,m:5},case:{c:3,m:4}}}},
+  {icon:'⚗️',name:'Class 12 Chemistry Board',badge:'School',desc:'MCQ+SA+LA · 70 marks · 3 hrs · CBSE Latest Pattern',p:{
+    examName:'Class 12 Chemistry Board Examination',subject:'Chemistry',level:'Class 11–12 (Science)',
+    examType:'Final / Annual Exam',totalMarks:'70',timeLimit:'180',sections:'4',
+    negMark:false,answerKey:true,
+    topics:'Solutions, Electrochemistry, Chemical Kinetics, d & f Block Elements, Coordination Compounds, Haloalkanes, Alcohols & Phenols, Amines, Biomolecules, Polymers, Chemistry in Everyday Life',
+    instructions:'All questions compulsory. Internal choice provided. Draw diagrams wherever necessary.',
+    easy:'30',medium:'50',hard:'20',
+    qtypes:{mcq:{c:16,m:1},short:{c:5,m:2},long:{c:7,m:3},multipart:{c:3,m:5}}}},
+  {icon:'📝',name:'SSC CGL Tier-1 Mock',badge:'Govt Jobs',desc:'100 Qs · 200 marks · 60 min · GI+GK+Quant+English',p:{
+    examName:'SSC CGL Tier-1 Mock Examination',subject:'General Intelligence, General Awareness, Quantitative Aptitude, English Comprehension',level:'SSC / Govt Recruitment',
+    examType:'Mock / Practice Test',totalMarks:'200',timeLimit:'60',sections:'4',
+    negMark:true,negVal:'0.5 mark',answerKey:true,
+    topics:'General Intelligence: Analogies, Classification, Series, Coding-Decoding, Matrix. GK: History, Geography, Polity, Science. Quant: Percentage, Profit/Loss, Time-Work, Geometry. English: Fill Blanks, Synonyms, Antonyms, Spotting Errors.',
+    instructions:'25 questions per section, 2 marks each. Negative marking: 0.5 for each wrong answer.',
+    easy:'40',medium:'45',hard:'15',
+    qtypes:{mcq:{c:100,m:2}}}},
+  {icon:'🔭',name:'Class 11 Physics Test',badge:'School',desc:'MCQ+Numerical+Long · 50 marks · 2 hrs · CBSE/State',p:{
+    examName:'Class 11 Physics Mid-Term Examination',subject:'Physics',level:'Class 11–12 (Science)',
+    examType:'Mid-Term / Half-Yearly',totalMarks:'50',timeLimit:'120',sections:'3',
+    negMark:false,answerKey:true,
+    topics:'Units & Measurements, Motion in Straight Line, Laws of Motion, Work Energy Power, Rotational Motion, Gravitation, Properties of Solids & Fluids, Thermodynamics',
+    instructions:'Section A: MCQ (1 mk). Section B: Short Answer with Numericals (3 mk). Section C: Long Answer (5 mk). Show all working in numericals.',
+    easy:'35',medium:'45',hard:'20',
+    qtypes:{mcq:{c:10,m:1},numerical:{c:5,m:3},long:{c:3,m:5}}}},
+  {icon:'🌍',name:'UPSC Mains GS-1',badge:'Civil Services',desc:'20 Qs · 250 marks · 3 hrs · History+Geography+Society',p:{
+    examName:'UPSC Civil Services Mains — General Studies Paper I',subject:'Indian Heritage & Culture, History, Geography, Society',level:'UPSC Mains',
+    examType:'Final / Annual Exam',totalMarks:'250',timeLimit:'180',sections:'2',
+    negMark:false,answerKey:true,
+    topics:'Modern Indian History, Post-Independence India, World History, Indian Society, Poverty & Development, Urbanisation, Globalisation, Physical Geography, Human Geography, Disaster Management',
+    instructions:'20 questions — answer any 20 out of 25. Word limit: 150 words for 10-mark Qs, 250 words for 15-mark Qs. Mention word count at end.',
+    easy:'20',medium:'50',hard:'30',
+    qtypes:{short:{c:10,m:10},long:{c:10,m:15}}}},
+  {icon:'💡',name:'Class 8 Science Quiz',badge:'School',desc:'MCQ+Fill+Short · 25 marks · 45 min · Fun & Engaging',p:{
+    examName:'Science Quiz — Chapter Test',subject:'Science',level:'Class 6–8 (Middle School)',
+    examType:'Unit Test / Quiz',totalMarks:'25',timeLimit:'45',sections:'3',
+    negMark:false,answerKey:true,
+    topics:'Cell Structure, Microorganisms, Conservation of Plants & Animals, Combustion, Metals & Non-Metals, Sound, Chemical Effects of Current, Stars and Solar System',
+    instructions:'All questions are compulsory. Read each question carefully before answering.',
+    easy:'50',medium:'35',hard:'15',
+    qtypes:{mcq:{c:5,m:1},fitb:{c:5,m:1},short:{c:5,m:3}}}},
+  {icon:'💰',name:'CA Foundation Mock',badge:'Finance',desc:'MCQ+Descriptive · 100 marks · 2 hrs · ICAI Pattern',p:{
+    examName:'CA Foundation Mock Examination',subject:'Principles of Accounting / Business Mathematics / Mercantile Law / Economics',level:'CA Foundation / CMA',
+    examType:'Mock / Practice Test',totalMarks:'100',timeLimit:'120',sections:'2',
+    negMark:true,negVal:'0.25 mark',answerKey:true,
+    topics:'Accounting Principles, Journal & Ledger, Final Accounts, Partnership Accounts, Business Mathematics, Statistics, Business Laws, Indian Contract Act, Economics for Finance',
+    instructions:'Part A: 60 MCQs (1 mk each, -0.25 wrong). Part B: Descriptive questions. Attempt all.',
+    easy:'35',medium:'45',hard:'20',
+    qtypes:{mcq:{c:60,m:1},short:{c:4,m:5},long:{c:2,m:10}}}},
+  {icon:'🗣️',name:'English Grammar Test',badge:'Language',desc:'Fill+Error+Comprehension · 50 marks · 90 min · All levels',p:{
+    examName:'English Language & Grammar Examination',subject:'English',level:'Class 9–10 (CBSE / State)',
+    examType:'Mid-Term / Half-Yearly',totalMarks:'50',timeLimit:'90',sections:'4',
+    negMark:false,answerKey:true,
+    topics:'Tenses, Voice (Active/Passive), Narration, Modals, Conditionals, Articles, Prepositions, Conjunctions, Reading Comprehension, Letter Writing, Essay Writing, Vocabulary (Synonyms/Antonyms)',
+    instructions:'Section A: Grammar MCQ. Section B: Fill in the Blanks. Section C: Reading Comprehension. Section D: Writing (Letter/Essay). Attempt all.',
+    easy:'40',medium:'40',hard:'20',
+    qtypes:{mcq:{c:10,m:1},fitb:{c:10,m:1},short:{c:5,m:3},long:{c:2,m:5}}}},
+  {icon:'🏗️',name:'B.Tech Semester Exam',badge:'Engineering',desc:'Short+Long+Numerical · 100 marks · 3 hrs · University Style',p:{
+    examName:'End Semester Examination',level:'Undergraduate Year 2–3',
+    examType:'Final / Annual Exam',totalMarks:'100',timeLimit:'180',sections:'3',
+    negMark:false,answerKey:true,choiceQ:true,
+    topics:'Core engineering subject — fundamentals, derivations, design principles, numerical problems, applications and case studies as per prescribed syllabus',
+    instructions:'Section A: Attempt all (2 mk × 10). Section B: Attempt any 4 of 6 (8 mk each). Section C: Attempt any 2 of 4 (16 mk each). Use of approved data book/charts permitted.',
+    easy:'25',medium:'50',hard:'25',
+    qtypes:{short:{c:10,m:2},long:{c:6,m:8},multipart:{c:4,m:16}}}},
+  {icon:'🧠',name:'CUET UG Mock',badge:'University Entry',desc:'50 MCQs · 200 marks · 45 min · Domain Subject',p:{
+    examName:'CUET UG Mock Test — Domain Subject',subject:'As per chosen domain',level:'JEE Main',
+    examType:'Mock / Practice Test',totalMarks:'200',timeLimit:'45',sections:'1',
+    negMark:true,negVal:'1 mark',answerKey:true,
+    topics:'Class 12 syllabus of chosen domain subject — all units and chapters as per NCERT/NTA prescribed syllabus',
+    instructions:'50 questions. Attempt any 40. Correct: +5 marks. Wrong: -1 mark. Unattempted: 0.',
+    easy:'30',medium:'50',hard:'20',
+    qtypes:{mcq:{c:50,m:5}}}},
+  {icon:'📖',name:'Class 5 EVS Test',badge:'Primary',desc:'MCQ+Picture+Short · 20 marks · 45 min · Simple & Clear',p:{
+    examName:'Environmental Studies (EVS) Unit Test',subject:'Environmental Studies',level:'Primary (Class 1–5)',
+    examType:'Unit Test / Quiz',totalMarks:'20',timeLimit:'45',sections:'3',
+    negMark:false,answerKey:true,
+    topics:'Our Family & Community, Food and Nutrition, Plants Around Us, Animals and Their Habitats, Water and Air, Shelter, Travel & Transport, Festivals and Folk Arts',
+    instructions:'All questions are compulsory. Draw and label diagrams wherever asked. Write neatly.',
+    easy:'60',medium:'30',hard:'10',
+    qtypes:{mcq:{c:5,m:1},fitb:{c:5,m:1},short:{c:5,m:2}}}},
 ];
 
 // ── QT GRID ──
@@ -1281,14 +1400,43 @@ function getQTypes() {
 // ── TEMPLATES ──
 function buildTemplates() {
   var g = document.getElementById('tmplGrid');
+  var catsEl = document.getElementById('tmplCats');
   if (!g) return;
   g.innerHTML = TEMPLATES.map(function(t, i) {
-    return '<div class="tmpl-card" onclick="loadTemplate(' + i + ')"><div class="tmpl-ico">' + t.icon + '</div>' +
-      '<div class="tmpl-name">' + t.name + '</div><span class="badge bg-gold">' + t.badge + '</span>' +
-      '<div class="tmpl-desc">' + t.desc + '</div><div class="tmpl-cta">Load template →</div></div>';
+    return '<div class="tmpl-card" data-idx="' + i + '" data-name="' + (t.name + ' ' + t.badge + ' ' + t.desc).toLowerCase() + '" data-cat="' + t.badge + '" onclick="loadTemplate(' + i + ')">' +
+      '<div class="tmpl-ico">' + t.icon + '</div>' +
+      '<div class="tmpl-name">' + t.name + '</div>' +
+      '<span class="badge bg-gold">' + t.badge + '</span>' +
+      '<div class="tmpl-desc">' + t.desc + '</div>' +
+      '<div class="tmpl-cta">Load template →</div></div>';
+  }).join('');
+  if (!catsEl) return;
+  var cats = ['All'];
+  TEMPLATES.forEach(function(t) { if (cats.indexOf(t.badge) === -1) cats.push(t.badge); });
+  catsEl.innerHTML = cats.map(function(c) {
+    return '<button class="tmpl-cat' + (c === 'All' ? ' on' : '') + '" onclick="setCat(\'' + c + '\')">' + c + '</button>';
   }).join('');
 }
-function loadTemplate(i) { loadParams(TEMPLATES[i].p); showView('gen'); showToast('Template loaded: ' + TEMPLATES[i].name, 'ok'); }
+var _activeCat = 'All';
+function setCat(cat) {
+  _activeCat = cat;
+  document.querySelectorAll('.tmpl-cat').forEach(function(b) { b.classList.toggle('on', b.textContent === cat); });
+  filterTemplates();
+}
+function filterTemplates() {
+  var q = (document.getElementById('tmplSearch') ? document.getElementById('tmplSearch').value : '').toLowerCase().trim();
+  var cards = document.querySelectorAll('.tmpl-card');
+  var visible = 0;
+  cards.forEach(function(card) {
+    var matchCat = _activeCat === 'All' || card.dataset.cat === _activeCat;
+    var matchSearch = !q || card.dataset.name.includes(q);
+    var show = matchCat && matchSearch;
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  var empty = document.getElementById('tmplEmpty');
+  if (empty) empty.classList.toggle('on', visible === 0);
+}
 function loadParams(p) {
   // STEP 1: Reset ALL QT cards to 0 first (so template replaces, not adds)
   QT.forEach(function(q) {
@@ -1566,12 +1714,22 @@ function buildPrompt(p) {
     '9. All questions: factually accurate, curriculum-correct, properly worded, educationally valid\n' +
     '10. Difficulty: ' + p.easy + '% Easy questions, ' + p.medium + '% Medium, ' + p.hard + '% Hard — distribute across sections\n' +
     (p.answerKey ?
-      '11. ANSWER KEY — NEW SEPARATE PAGE (MANDATORY): After "END OF QUESTION PAPER", add this EXACT block:\n' +
+      '11. ANSWER KEY — MANDATORY SEPARATE PAGE after "END OF QUESTION PAPER":\n' +
       '    ════════════════════════════════════════════════════════\n' +
       '    ANSWER KEY / SOLUTIONS\n' +
       '    ════════════════════════════════════════════════════════\n' +
-      '    List: Q1.(b)  Q2.True  Q3.(Short answer model solution)  etc.\n' +
-      '    Answer key MUST be on its own page, NOT mixed into question paper.\n'
+      '    ANSWER LENGTH RULES — strictly based on marks per question:\n' +
+      '    • MCQ/True-False/One-word (1 mk): Answer only. Example: Q1.(b)  Q2.True  Q3.Mitosis\n' +
+      '    • Fill in the Blank (1-2 mk): Exact word/phrase only. No extra explanation.\n' +
+      '    • Very Short Answer (1-2 mk): Maximum 1-2 sentences. Direct answer only.\n' +
+      '    • Short Answer (3-4 mk): 4-6 sentences covering all key points. Use bullet points for clarity.\n' +
+      '    • Long Answer (5-8 mk): Minimum 2-3 full paragraphs. Structure: Introduction → Explanation with examples → Conclusion. Minimum 180 words.\n' +
+      '    • Very Long/Detailed Answer (10+ mk): Minimum 350 words. Must include: definition, detailed explanation, labelled diagram (described), real-world examples, applications, and conclusion.\n' +
+      '    • Numerical/Problem (any mk): Full working — Formula stated → Values substituted → Step-by-step calculation → Final answer with units.\n' +
+      '    • Case-Based/Passage (per part): Answer each (i)(ii)(iii) separately. Each part 2-4 sentences minimum.\n' +
+      '    • Assertion-Reason (1 mk): State option letter (A/B/C/D) + one-line reason.\n' +
+      '    CRITICAL: A 10-mark answer must be detailed enough for full marks. A 1-mark answer must be concise. Match answer length to marks always.\n' +
+      '    Answer key MUST appear on its own page, completely after the question paper ends.\n'
       : '11. Do NOT include any answers anywhere in the question paper.\n') +
     '\nIMPORTANT: Generate completely NEW and UNIQUE questions — never repeat questions from any previous paper. Generation ID: ' + Math.random().toString(36).slice(2) + '-' + Date.now() + '\nGenerate the FULL, COMPLETE, UNTRUNCATED question paper — do NOT stop midway:';
 }
