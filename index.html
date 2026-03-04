@@ -335,8 +335,8 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <circle cx="62" cy="57" r="2.5" fill="#fff" opacity="0.8"/>
     <rect x="24" y="69" width="42" height="2.5" rx="1.25" fill="url(#sg1)" opacity="0.7"/>
   </svg>
-  <div class="splash-wordmark">Ques<b>trix</b></div>
-  <div class="splash-tagline">Smart Question Paper Generator</div>
+  <div class="splash-wordmark">Smart <b>Buddy</b></div>
+  <div class="splash-tagline">AI Question Paper Generator</div>
   <div class="splash-loader"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>
 </div>
 
@@ -359,7 +359,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <rect width="90" height="90" rx="22" fill="url(#ab1)"/>
     <text x="45" y="62" font-family="Georgia,serif" font-size="52" font-weight="400" font-style="italic" fill="url(#ab2)" text-anchor="middle">Q</text>
   </svg>
-  <div class="auth-brand">Ques<span>trix</span></div>
+  <div class="auth-brand">Smart <span>Buddy</span></div>
   <div class="auth-tagline">Smart Question Paper Generator</div>
 
   <div class="auth-card">
@@ -732,14 +732,21 @@ var currentUser = null;
 var deferredInstallPrompt = null;
 var appShown = false;
 
-// Splash: force-hidden after 3s no matter what — extended to 10s if OAuth redirect
-var splashTimer = setTimeout(function() { removeSplash(); }, 3000);
+// Splash: shows for max 2.5s, then ALWAYS shows auth or app — never blank
+var splashTimer = setTimeout(function() {
+  // If auth hasn't shown anything yet, show login
+  if (!appShown && !document.getElementById('authScreen').classList.contains('on')) {
+    showAuth();
+  } else {
+    removeSplash();
+  }
+}, 2500);
 function removeSplash() {
   clearTimeout(splashTimer);
   var s = document.getElementById('splash');
   if (s && !s.classList.contains('out')) {
     s.classList.add('out');
-    setTimeout(function() { try { s.parentNode.removeChild(s); } catch(x){} }, 800);
+    setTimeout(function() { try { s.parentNode.removeChild(s); } catch(x){} }, 700);
   }
 }
 
@@ -841,7 +848,7 @@ if ('serviceWorker' in navigator) {
       return;
     }
 
-    if (waited >= 8000) {
+    if (waited >= 4000) {
       clearInterval(poll);
       // CDN failed completely — show auth so user isn't stuck forever
       removeSplash();
@@ -870,10 +877,10 @@ function startAuth(isOAuthReturn) {
   if (isOAuthReturn) {
     clearTimeout(splashTimer);
     splashTimer = setTimeout(function() {
-      // If we're STILL on splash after 10s during OAuth, something went wrong
+      // If still on splash after 7s during OAuth, something went wrong
       removeSplash();
       showAuth();
-    }, 10000);
+    }, 7000);
   }
 
   // onAuthStateChange is the SINGLE source of truth for auth state
@@ -903,16 +910,16 @@ function startAuth(isOAuthReturn) {
     }
   });
 
-  // Safety net: if we're NOT in an OAuth return and auth never fires, show login
-  if (!isOAuthReturn) {
-    setTimeout(function() {
-      var splash = document.getElementById('splash');
-      if (splash && !splash.classList.contains('out')) {
-        removeSplash();
-        showAuth();
-      }
-    }, 5000);
-  }
+  // Safety net: if nothing shows within 3s, force show auth
+  setTimeout(function() {
+    var auth = document.getElementById('authScreen');
+    var main = document.getElementById('mainApp');
+    if (!appShown && auth && !auth.classList.contains('on') &&
+        main && main.style.display !== 'block') {
+      console.warn('Auth safety net triggered — forcing login screen');
+      showAuth();
+    }
+  }, 3000);
 }
 
 // DOMContentLoaded — build static UI
