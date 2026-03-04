@@ -608,6 +608,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
         <button class="tbtn" onclick="copyTxt()">📋 Copy</button>
         <button class="tbtn" onclick="printPaper()">🖨 Print</button>
         <button class="tbtn" onclick="generate()">🔄 Regenerate</button>
+        <button class="tbtn" onclick="newPaper()" style="color:var(--sage);border-color:var(--sage)">✦ New Paper</button>
         <button class="tbtn" id="editToggleBtn" onclick="toggleEditMode()" style="color:var(--gold);border-color:var(--gold)">✏️ Edit</button>
       </div>
       <div id="editHint" style="display:none;font-size:11px;color:var(--gold);font-weight:600;padding:6px 0 2px">✏️ Editing mode — click any text to edit. Changes are saved automatically when you download.</div>
@@ -1572,7 +1573,7 @@ function buildPrompt(p) {
       '    List: Q1.(b)  Q2.True  Q3.(Short answer model solution)  etc.\n' +
       '    Answer key MUST be on its own page, NOT mixed into question paper.\n'
       : '11. Do NOT include any answers anywhere in the question paper.\n') +
-    '\nGenerate the FULL, COMPLETE, UNTRUNCATED question paper — do NOT stop midway:';
+    '\nIMPORTANT: Generate completely NEW and UNIQUE questions — never repeat questions from any previous paper. Generation ID: ' + Math.random().toString(36).slice(2) + '-' + Date.now() + '\nGenerate the FULL, COMPLETE, UNTRUNCATED question paper — do NOT stop midway:';
 }
 
 // ── API KEYS ──
@@ -1586,6 +1587,45 @@ function updateDots() {
 
 // ── GENERATE ──
 var lastGenText = '';
+
+function newPaper() {
+  // Clear all text inputs
+  ['subject','subjectCode','institution','examName','acadYear','examDate',
+   'refBook','topics','excludeTopics','instructions','pasteContent'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  // Reset selects to defaults
+  var level = document.getElementById('level'); if (level) level.selectedIndex = 0;
+  var examType = document.getElementById('examType'); if (examType) examType.selectedIndex = 0;
+  var lang = document.getElementById('lang'); if (lang) lang.selectedIndex = 0;
+  var extractDepth = document.getElementById('extractDepth'); if (extractDepth) extractDepth.selectedIndex = 1;
+  // Reset number inputs
+  var tm = document.getElementById('totalMarks'); if (tm) tm.value = '100';
+  var tl = document.getElementById('timeLimit'); if (tl) tl.value = '180';
+  var sec = document.getElementById('sections'); if (sec) sec.value = '3';
+  // Clear uploaded files
+  uploadedText = '';
+  var chipRow = document.getElementById('chipRow');
+  if (chipRow) chipRow.innerHTML = '';
+  var fi = document.getElementById('fileInput');
+  if (fi) fi.value = '';
+  // Deselect all question types
+  document.querySelectorAll('.qt-card.on').forEach(function(c) { c.classList.remove('on'); });
+  // Reset difficulty sliders
+  var se = document.getElementById('slEasy'); if (se) { se.value = 30; }
+  var sm = document.getElementById('slMedium'); if (sm) { sm.value = 50; }
+  var sh = document.getElementById('slHard'); if (sh) { sh.value = 20; }
+  try { syncDiff(); } catch(e) {}
+  // Hide output
+  var ow = document.getElementById('outWrap'); if (ow) ow.classList.remove('on');
+  lastGenText = '';
+  // Scroll to top of form
+  var genView = document.getElementById('view-gen');
+  if (genView) genView.scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('✦ Ready for a new paper — all fields cleared', 'ok');
+}
+
 async function generate() {
   var p = collectP();
   if (!p.subject.trim()) { showToast('Please enter a subject name', 'err'); return; }
