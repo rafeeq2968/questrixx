@@ -28,6 +28,11 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-
 body{font-family:'Cabinet Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
 /* ── SPLASH ── */
+/* ── CUSTOM CURSOR DOT ── */
+#cursorDot{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:999999;transform:translate(-50%,-50%);transition:width 0.15s ease,height 0.15s ease,opacity 0.2s ease;box-shadow:0 0 8px var(--gold-glow);opacity:0;top:0;left:0}
+#cursorDot.vis{opacity:1}
+#cursorDot.big{width:18px;height:18px;opacity:0.5}
+@media(hover:none),(pointer:coarse){#cursorDot{display:none!important}}
 #splash{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.7s var(--ease)}
 #splash.out{opacity:0;pointer-events:none}
 .splash-logo{width:90px;height:90px;animation:splashPop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.1s both}
@@ -316,6 +321,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 <body>
 
 <!-- SPLASH — always shows first, then JS removes it fast -->
+<div id="cursorDot"></div>
 <div id="splash">
   <svg class="splash-logo" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
@@ -420,6 +426,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <button class="mob-btn" onclick="showView('history')"><span class="mob-ico">📋</span>History</button>
     <button class="mob-btn" onclick="showView('templates')"><span class="mob-ico">🗂</span>Templates</button>
     <button class="mob-btn" onclick="showView('settings')"><span class="mob-ico">⚙</span>Settings</button>
+    <button class="mob-btn" id="mobInstallBtn" onclick="triggerInstall()" style="display:none;color:var(--gold)"><span class="mob-ico">📲</span>Install</button>
   </div>
 </nav>
 
@@ -766,27 +773,45 @@ function showApp() {
   removeSplash();
   var a = document.getElementById('authScreen');
   var m = document.getElementById('mainApp');
-  // If transitioning FROM auth screen (login just happened), show brief loading
   var wasOnAuth = a && a.classList.contains('on');
   if (a) a.classList.remove('on');
 
   if (wasOnAuth && !appShown) {
-    // Show a brief post-login loading overlay before revealing the app
+    // Post-login: 1.5s loading overlay → app
+    // Uses createElement only — NO innerHTML with nested quotes (that was the crash)
     var overlay = document.createElement('div');
     overlay.id = 'postLoginOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px';
-    overlay.innerHTML = '<svg width="48" height="48" viewBox="0 0 90 90"><rect width="90" height="90" rx="22" fill="#18291c"/><text x="45" y="62" font-family="Georgia,serif" font-size="52" font-style="italic" fill="#F5C350" text-anchor="middle">Q</text></svg>' +
-      '<div style="font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:700;color:var(--muted2);letter-spacing:0.08em;animation:pulse 1.5s infinite">Preparing your workspace…</div>' +
-      '<div style="display:flex;gap:6px;margin-top:8px"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.zIndex = '99998';
+    overlay.style.background = 'var(--bg)';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.gap = '16px';
+    // Logo
+    var logoSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    logoSvg.setAttribute('width','56'); logoSvg.setAttribute('height','56'); logoSvg.setAttribute('viewBox','0 0 90 90');
+    logoSvg.innerHTML = '<rect width="90" height="90" rx="22" fill="#18291c"/><text x="45" y="62" font-family="Georgia,serif" font-size="52" font-style="italic" fill="#F5C350" text-anchor="middle">Q</text>';
+    overlay.appendChild(logoSvg);
+    // Text
+    var txtEl = document.createElement('div');
+    txtEl.textContent = 'Preparing your workspace…';
+    txtEl.style.cssText = 'font-size:13px;font-weight:700;color:var(--muted2);letter-spacing:0.08em;animation:pulse 1.5s infinite';
+    overlay.appendChild(txtEl);
+    // Dots
+    var dotsEl = document.createElement('div');
+    dotsEl.style.cssText = 'display:flex;gap:6px;margin-top:8px';
+    for (var d = 0; d < 3; d++) { var dt = document.createElement('div'); dt.className = 'sl-dot'; dotsEl.appendChild(dt); }
+    overlay.appendChild(dotsEl);
     document.body.appendChild(overlay);
     if (m) m.style.display = 'block';
-    // Build UI while overlay shows
     appShown = true;
     try { buildQTGrid(); } catch(e) {}
     try { buildTemplates(); } catch(e) {}
     try { loadPrefs(); } catch(e) {}
     try { syncDiff(); } catch(e) {}
-    // Remove overlay after 1.5s
     setTimeout(function() {
       overlay.style.transition = 'opacity 0.5s';
       overlay.style.opacity = '0';
@@ -829,7 +854,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
     if (banner) banner.classList.add('on');
   }
   // Show ALL install buttons wherever they exist on the page
-  ['settingsInstallBtn', 'authInstallBtn', 'headerInstallBtn'].forEach(function(id) {
+  ['settingsInstallBtn', 'authInstallBtn', 'headerInstallBtn', 'mobInstallBtn'].forEach(function(id) {
     var btn = document.getElementById(id);
     if (btn) { btn.style.display = 'inline-flex'; btn.onclick = triggerInstall; }
   });
@@ -840,7 +865,7 @@ window.addEventListener('appinstalled', function() {
   deferredInstallPrompt = null;
   var b = document.getElementById('installBanner');
   if (b) b.classList.remove('on');
-  ['settingsInstallBtn','authInstallBtn','headerInstallBtn'].forEach(function(id) {
+  ['settingsInstallBtn','authInstallBtn','headerInstallBtn','mobInstallBtn'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
@@ -969,12 +994,56 @@ function startAuth(isOAuthReturn) {
   }, 3000);
 }
 
-// DOMContentLoaded — build static UI
+// DOMContentLoaded — build static UI + cursor + slider shield
 document.addEventListener('DOMContentLoaded', function() {
   try { buildQTGrid(); } catch(e) {}
   try { buildTemplates(); } catch(e) {}
   try { loadPrefs(); } catch(e) {}
   try { syncDiff(); } catch(e) {}
+
+  // ── Custom gold cursor dot (desktop only) ──
+  var dot = document.getElementById('cursorDot');
+  if (dot && window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
+    document.addEventListener('mousemove', function(e) {
+      dot.style.left = e.clientX + 'px';
+      dot.style.top  = e.clientY + 'px';
+      dot.classList.add('vis');
+    });
+    document.addEventListener('mouseleave', function() { dot.classList.remove('vis'); });
+    document.addEventListener('mousedown',  function() { dot.style.transform = 'translate(-50%,-50%) scale(0.6)'; });
+    document.addEventListener('mouseup',    function() { dot.style.transform = 'translate(-50%,-50%) scale(1)'; });
+    document.addEventListener('mouseover', function(e) {
+      var t = e.target;
+      if (t.matches('button,a,input,label,[onclick]') || t.closest('button,a')) {
+        dot.classList.add('big');
+      } else {
+        dot.classList.remove('big');
+      }
+    });
+  }
+
+  // ── Slider touch shield: block QT grid touches during slider drag ──
+  var slWrap = document.querySelector('.sl-wrap');
+  var qtGrid = document.getElementById('qtGrid');
+  if (slWrap && qtGrid) {
+    slWrap.addEventListener('touchstart', function() {
+      qtGrid.style.pointerEvents = 'none';
+      qtGrid.style.opacity = '0.55';
+    }, {passive: true});
+    var restoreQt = function() {
+      setTimeout(function() {
+        qtGrid.style.pointerEvents = '';
+        qtGrid.style.opacity = '';
+      }, 200);
+    };
+    slWrap.addEventListener('touchend',    restoreQt, {passive: true});
+    slWrap.addEventListener('touchcancel', restoreQt, {passive: true});
+    // Prevent range inputs from propagating touches upward
+    slWrap.querySelectorAll('input[type=range]').forEach(function(r) {
+      r.addEventListener('touchstart', function(e) { e.stopPropagation(); }, {passive: false});
+      r.addEventListener('touchmove',  function(e) { e.stopPropagation(); }, {passive: false});
+    });
+  }
 });
 // ═══════════════════════════════════════
 // AUTH FUNCTIONS
@@ -1529,9 +1598,8 @@ async function generate() {
     document.getElementById('progressWrap').classList.remove('on');
     document.getElementById('genBtn').disabled = false;
     var msg = e.message || 'Generation failed';
-    if (msg === 'NO_KEY') {
-      showToast('❌ AI service unavailable. Please try again in a moment.', 'err');
-      
+    if (msg.includes('not configured') || msg.includes('Contact support') || msg === 'NO_KEY') {
+      showToast('⚠️ Generation failed: API keys not set on Vercel. Go to Vercel → Settings → Environment Variables and add GEMINI_API_KEY + GROQ_API_KEY, then Redeploy.', 'err');
     } else if (msg.includes('401') || msg.includes('invalid') || msg.toLowerCase().includes('api key')) {
       showToast('❌ Generation failed. Please try again.', 'err');
     } else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate')) {
@@ -1547,8 +1615,6 @@ async function generate() {
   clearInterval(tick);
   document.getElementById('progressWrap').classList.remove('on');
   document.getElementById('genBtn').disabled = false;
-  lastGenText = result;
-
   lastGenText = result;
   renderPaper(result, model, p);
 }
