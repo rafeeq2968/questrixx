@@ -33,6 +33,9 @@ body{font-family:'Cabinet Grotesk',system-ui,sans-serif;background:var(--bg);col
 #cursorDot.vis{opacity:1}
 #cursorDot.big{width:18px;height:18px;opacity:0.5}
 @media(hover:none),(pointer:coarse){#cursorDot{display:none!important}}
+/* Mobile touch ripple */
+.touch-ripple{position:fixed;width:36px;height:36px;border-radius:50%;border:2px solid var(--gold);pointer-events:none;z-index:999998;transform:translate(-50%,-50%) scale(0);opacity:0.7;animation:touchRippleAnim 0.5s ease-out forwards}
+@keyframes touchRippleAnim{0%{transform:translate(-50%,-50%) scale(0);opacity:0.7}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0}}
 #splash{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.7s var(--ease)}
 #splash.out{opacity:0;pointer-events:none}
 .splash-logo{width:90px;height:90px;animation:splashPop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.1s both}
@@ -195,10 +198,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 .drop-txt{font-size:13px;color:var(--muted2);line-height:1.7;pointer-events:none}
 .drop-txt b{color:var(--text)}
 .drop-hint{font-size:11px;color:var(--muted);margin-top:6px;pointer-events:none}
-.chip-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px}
-.chip{background:var(--s3);border:1px solid var(--b2);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;color:var(--text)}
-.chip-x{cursor:pointer;color:var(--muted);font-size:10px;pointer-events:all}
-.chip-x:hover{color:var(--terra)}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+.chip{background:var(--s3);border:1.5px solid var(--gold-dim);border-radius:24px;padding:8px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--text);max-width:100%;word-break:break-all}
+.chip-x{cursor:pointer;color:var(--muted2);font-size:16px;font-weight:900;pointer-events:all;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);margin-left:4px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.chip-x:hover,.chip-x:active{color:#fff;background:var(--terra)}
 
 /* ── BUTTONS ── */
 .gen-btn{display:block;width:100%;margin:22px 0;padding:17px;border:none;border-radius:var(--r);background:linear-gradient(135deg,var(--gold),#c47c1a);color:#000;font-family:'Cabinet Grotesk',sans-serif;font-size:16px;font-weight:900;letter-spacing:0.05em;cursor:pointer;transition:var(--t)}
@@ -699,6 +702,18 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   </div>
 
   <div class="setting-group">
+    <div class="sg-label">Share App</div>
+    <div class="card" style="font-size:13px;color:var(--muted2);line-height:1.9">
+      Share Questrix with students, teachers or colleagues — they just open the link and it works like an app instantly.<br><br>
+      <div style="display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap">
+        <span id="shareUrlText" style="font-family:monospace;font-size:12px;color:var(--text);flex:1;word-break:break-all">questrixx.vercel.app</span>
+        <button class="tbtn" onclick="copyAppLink()" style="flex-shrink:0;padding:6px 14px">📋 Copy</button>
+      </div>
+      <button class="tbtn primary" onclick="shareApp()" style="width:100%">🔗 Share App Link</button>
+    </div>
+  </div>
+
+  <div class="setting-group">
     <div class="sg-label">Data Management</div>
     <div class="card">
       <div class="flex" style="flex-wrap:wrap;gap:8px">
@@ -888,6 +903,43 @@ function dismissInstall() {
   localStorage.setItem('qx_dismissed_install', '1');
 }
 
+function shareApp() {
+  var url = window.location.origin || 'https://questrixx.vercel.app';
+  var text = 'Try Questrix — AI-powered question paper generator! Works instantly in any browser.';
+  if (navigator.share) {
+    navigator.share({ title: 'Questrix — Smart Question Paper Generator', text: text, url: url })
+      .catch(function() {});
+  } else {
+    // Desktop fallback — copy to clipboard
+    copyAppLink();
+    showToast('Link copied! Share it with anyone — they just open it in their browser.', 'ok');
+  }
+}
+
+function copyAppLink() {
+  var url = window.location.origin || 'https://questrixx.vercel.app';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function() {
+      showToast('✅ Link copied! Share it with anyone.', 'ok');
+    }).catch(function() {
+      fallbackCopy(url);
+    });
+  } else {
+    fallbackCopy(url);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast('✅ Link copied!', 'ok'); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
 // ── Service Worker ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -1020,6 +1072,22 @@ document.addEventListener('DOMContentLoaded', function() {
         dot.classList.remove('big');
       }
     });
+  }
+
+  // ── Mobile touch ripple dot ──
+  if (window.matchMedia('(hover:none),(pointer:coarse)').matches) {
+    document.addEventListener('touchstart', function(e) {
+      var touch = e.touches[0];
+      if (!touch) return;
+      // Don't show ripple on chip-x (the remove button) — avoid visual confusion
+      if (e.target && e.target.classList.contains('chip-x')) return;
+      var ripple = document.createElement('div');
+      ripple.className = 'touch-ripple';
+      ripple.style.left = touch.clientX + 'px';
+      ripple.style.top  = touch.clientY + 'px';
+      document.body.appendChild(ripple);
+      setTimeout(function() { try { ripple.parentNode.removeChild(ripple); } catch(x){} }, 550);
+    }, {passive: true});
   }
 
   // ── Slider touch shield: block QT grid touches during slider drag ──
@@ -1425,11 +1493,14 @@ function processFiles(files) {
     chip.id = 'chip-' + f.name.replace(/[^a-z0-9]/gi, '_');
     chip.innerHTML = '📄 ' + f.name + ' <span class="chip-x" title="Remove">✕</span>';
     (function(chipEl, fileName) {
-      chipEl.querySelector('.chip-x').addEventListener('click', function(ev) {
+      var xBtn = chipEl.querySelector('.chip-x');
+      function doRemove(ev) {
         ev.preventDefault();
         ev.stopPropagation();
         removeFile(fileName, chipEl);
-      });
+      }
+      xBtn.addEventListener('click',    doRemove);
+      xBtn.addEventListener('touchend', doRemove, {passive: false});
     })(chip, f.name);
     row.appendChild(chip);
 
