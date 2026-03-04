@@ -1,7 +1,7 @@
 {
-  "name": "Questrix — AI Question Paper Generator",
-  "short_name": "Questrix",
-  "description": "Generate any question paper with AI — school, college, competitive exams.",
+  "name": "Smart Buddy — AI Question Paper Generator",
+  "short_name": "Smart Buddy",
+  "description": "Generate professional question papers with AI — school, college, competitive exams.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080f0b",
@@ -23,7 +23,6 @@
     }
   ],
   "categories": ["education", "productivity"],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "Generate Paper",

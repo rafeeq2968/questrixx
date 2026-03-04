@@ -7,11 +7,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Questrix">
-<meta name="description" content="AI Question Paper Generator">
+<meta name="apple-mobile-web-app-title" content="Smart Buddy">
+<meta name="description" content="Smart Buddy — AI Question Paper Generator">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-512.png">
-<title>Questrix — AI Question Paper Generator</title>
+<title>Smart Buddy — AI Question Paper Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cabinet+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -333,14 +333,14 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <circle cx="62" cy="57" r="2.5" fill="#fff" opacity="0.8"/>
     <rect x="24" y="69" width="42" height="2.5" rx="1.25" fill="url(#sg1)" opacity="0.7"/>
   </svg>
-  <div class="splash-wordmark">Ques<b>trix</b></div>
+  <div class="splash-wordmark">Smart <b>Buddy</b></div>
   <div class="splash-tagline">AI Question Paper Generator</div>
   <div class="splash-loader"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>
 </div>
 
 <!-- PWA INSTALL BANNER -->
 <div id="installBanner">
-  <div class="ib-text">📲 Install <span>Questrix</span> on your device for instant access</div>
+  <div class="ib-text">📲 Install <span>Smart Buddy</span> on your device for instant access</div>
   <div class="ib-btns">
     <button class="ib-install" id="installBannerBtn">Install</button>
     <button class="ib-dismiss" onclick="dismissInstall()">✕</button>
@@ -357,8 +357,8 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <rect width="90" height="90" rx="22" fill="url(#ab1)"/>
     <text x="45" y="62" font-family="Georgia,serif" font-size="52" font-weight="400" font-style="italic" fill="url(#ab2)" text-anchor="middle">Q</text>
   </svg>
-  <div class="auth-brand">Ques<span>trix</span></div>
-  <div class="auth-tagline">Smart Question Paper Maker</div>
+  <div class="auth-brand">Smart <span>Buddy</span></div>
+  <div class="auth-tagline">AI Question Paper Generator</div>
 
   <div class="auth-card">
     <div class="auth-tabs">
@@ -400,7 +400,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
       <circle cx="62" cy="57" r="2.5" fill="#fff" opacity="0.8"/>
       <rect x="24" y="69" width="42" height="2.5" rx="1.25" fill="url(#wl3)" opacity="0.7"/>
     </svg>
-    <div class="wm-text">Ques<span>trix</span></div>
+    <div class="wm-text">Smart <span>Buddy</span></div>
   </div>
   <a class="nav-item active" href="#" onclick="showView('gen');return false"><span class="ni">✦</span><span class="nl">Generate</span></a>
   <a class="nav-item" href="#" onclick="showView('history');return false"><span class="ni">📋</span><span class="nl">History</span></a>
@@ -545,13 +545,13 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   </div>
 
   <div class="card">
-    <div class="sec-label"><div class="sec-num">5</div><div><div class="sec-title">Difficulty Distribution</div><div class="sec-desc">Must total exactly 100%</div></div></div>
+    <div class="sec-label"><div class="sec-num">5</div><div><div class="sec-title">Difficulty Distribution</div><div class="sec-desc">Set your preferred mix — optional</div></div></div>
     <div class="sl-wrap">
-      <div class="sl-row"><span class="sl-lbl sl-easy">Easy</span><input type="range" id="slEasy" min="0" max="100" value="30" oninput="syncDiff()"><span class="sl-val" id="vEasy">30%</span></div>
-      <div class="sl-row"><span class="sl-lbl sl-med">Medium</span><input type="range" id="slMedium" min="0" max="100" value="50" oninput="syncDiff()"><span class="sl-val" id="vMedium">50%</span></div>
-      <div class="sl-row"><span class="sl-lbl sl-hard">Hard</span><input type="range" id="slHard" min="0" max="100" value="20" oninput="syncDiff()"><span class="sl-val" id="vHard">20%</span></div>
+      <div class="sl-row"><span class="sl-lbl sl-easy">Easy</span><input type="range" id="slEasy" min="0" max="100" step="10" value="30" oninput="syncDiff()"><span class="sl-val" id="vEasy">30%</span></div>
+      <div class="sl-row"><span class="sl-lbl sl-med">Medium</span><input type="range" id="slMedium" min="0" max="100" step="10" value="50" oninput="syncDiff()"><span class="sl-val" id="vMedium">50%</span></div>
+      <div class="sl-row"><span class="sl-lbl sl-hard">Hard</span><input type="range" id="slHard" min="0" max="100" step="10" value="20" oninput="syncDiff()"><span class="sl-val" id="vHard">20%</span></div>
     </div>
-    <div id="diffWarn" class="hidden mt8" style="font-size:12px;color:var(--terra)">⚠ Total is <span id="diffTotal">100</span>% — must equal 100%</div>
+    <div id="diffWarn" class="hidden mt8" style="font-size:12px;color:var(--gold)">ℹ Total is <span id="diffTotal">100</span>% — AI will proportionally adjust if not 100%</div>
   </div>
 
   <!-- BYOC CARD -->
@@ -632,7 +632,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
   <div class="page-hd">
     <div class="eyebrow"><span class="eyebrow-dot"></span>Configuration</div>
     <h1 class="page-title"><span>Settings</span></h1>
-    <p class="page-sub">API keys, preferences, and account.</p>
+    <p class="page-sub">Account, preferences, and data.</p>
   </div>
 
   <div class="setting-group">
@@ -640,33 +640,6 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <div class="card" style="padding:20px 22px">
       <div id="accountInfo" style="font-size:13px;color:var(--muted2);font-weight:600;margin-bottom:14px"></div>
       <button class="tbtn" style="color:var(--terra)" onclick="signOut()">↩ Sign Out</button>
-    </div>
-  </div>
-
-  <div class="setting-group">
-    <div class="sg-label">AI API Keys</div>
-    <div class="card" style="padding:20px 22px">
-      <p style="font-size:12px;color:var(--muted2);margin-bottom:16px;line-height:1.7;font-weight:500">
-        Keys are saved in your browser only. Gemini runs first — Groq activates automatically as backup.
-      </p>
-      <div class="key-card">
-        <div class="key-provider"><span class="sdot" id="gDot"></span> Gemini 1.5 Flash (Primary — Free)</div>
-        <div class="key-input-row">
-          <input class="key-inp" type="password" id="keyGemini" placeholder="AIzaSy…" autocomplete="off">
-          <button class="key-save" onclick="saveKey('gemini')">Save</button>
-        </div>
-        <a class="key-link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Get free key at aistudio.google.com ↗</a>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">Free: 1,500 req/day · 15 req/min</div>
-      </div>
-      <div class="key-card">
-        <div class="key-provider"><span class="sdot" id="grDot"></span> Groq — LLaMA 3.3 70B (Backup — Free)</div>
-        <div class="key-input-row">
-          <input class="key-inp" type="password" id="keyGroq" placeholder="gsk_…" autocomplete="off">
-          <button class="key-save" onclick="saveKey('groq')">Save</button>
-        </div>
-        <a class="key-link" href="https://console.groq.com/keys" target="_blank" rel="noopener">Get free key at console.groq.com ↗</a>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">Free: 14,400 req/day · Very fast</div>
-      </div>
     </div>
   </div>
 
@@ -679,7 +652,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <div class="sg-label">Preferences</div>
     <div class="card">
       <div class="trow"><div><div class="ti-name">Auto-save papers to History</div></div><label class="sw"><input type="checkbox" id="pAutosave" checked onchange="savePref()"><span class="sw-bg"></span></label></div>
-      <div class="trow" style="border-bottom:none"><div><div class="ti-name">Show AI model badge during generation</div></div><label class="sw"><input type="checkbox" id="pBadge" checked onchange="savePref()"><span class="sw-bg"></span></label></div>
+      <div class="trow" style="border-bottom:none"><div><div class="ti-name">Include answer key by default</div></div><label class="sw"><input type="checkbox" id="pAnswerKey" checked onchange="savePref()"><span class="sw-bg"></span></label></div>
     </div>
   </div>
 
@@ -688,7 +661,8 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
     <div class="card" style="font-size:13px;color:var(--muted2);line-height:2.1">
       <b style="color:var(--text)">📱 Android (Chrome):</b> Tap ⋮ menu → "Add to Home Screen" → Install<br>
       <b style="color:var(--text)">🍎 iPhone (Safari):</b> Tap Share ⬆ → "Add to Home Screen" → Add<br>
-      <b style="color:var(--text)">💻 Desktop (Chrome/Edge):</b> Look for install icon (⊕) in address bar → click → Install
+      <b style="color:var(--text)">💻 Desktop (Chrome/Edge):</b> Look for install icon (⊕) in address bar → Install<br><br>
+      <button class="tbtn primary" id="settingsInstallBtn" style="display:none" onclick="triggerInstall()">📲 Install Smart Buddy Now</button>
     </div>
   </div>
 
@@ -719,22 +693,6 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-// ── CACHE BUSTER: unregister old broken service workers on first load ──
-(function() {
-  var cleared = sessionStorage.getItem('qx_sw_cleared');
-  if (!cleared && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-      regs.forEach(function(r) { r.unregister(); });
-    });
-    if ('caches' in window) {
-      caches.keys().then(function(keys) {
-        keys.forEach(function(k) { caches.delete(k); });
-      });
-    }
-    sessionStorage.setItem('qx_sw_cleared', '1');
-  }
-})();
-
 // ═══════════════════════════════════════
 // SUPABASE CONFIG
 // ═══════════════════════════════════════
@@ -770,22 +728,42 @@ function showAuth() {
 }
 
 function showApp() {
-  removeSplash();
   var a = document.getElementById('authScreen');
-  var m = document.getElementById('mainApp');
   if (a) a.classList.remove('on');
-  if (m) m.style.display = 'block';
-  updateAccountInfo();
-  if (!appShown) {
-    appShown = true;
-    try { buildQTGrid(); } catch(e) {}
-    try { buildTemplates(); } catch(e) {}
-    try { loadPrefs(); } catch(e) {}
-    try { syncDiff(); } catch(e) {}
+
+  // Show a brief post-login splash before entering main app
+  var postSplash = document.getElementById('postSplash');
+  if (!postSplash) {
+    postSplash = document.createElement('div');
+    postSplash.id = 'postSplash';
+    postSplash.style.cssText = 'position:fixed;inset:0;z-index:99990;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity 0.6s ease';
+    postSplash.innerHTML = '<svg style="width:70px;height:70px;animation:splashPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both" viewBox="0 0 90 90" fill="none"><defs><linearGradient id="ps1" x1="0" y1="0" x2="90" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#18291c"/><stop offset="100%" stop-color="#0d1a10"/></linearGradient><linearGradient id="ps2" x1="20" y1="20" x2="70" y2="70" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#F5C350"/><stop offset="100%" stop-color="#C47C1A"/></linearGradient></defs><rect width="90" height="90" rx="22" fill="url(#ps1)"/><text x="45" y="62" font-family="Georgia,serif" font-size="52" font-weight="400" font-style="italic" fill="url(#ps2)" text-anchor="middle">Q</text></svg>'
+      + '<div style="font-family:\'Instrument Serif\',serif;font-size:1.8rem;font-style:italic;color:var(--text);animation:fadeUp 0.4s ease 0.2s both">Smart <b style="color:var(--gold);font-style:normal">Buddy</b></div>'
+      + '<div style="display:flex;gap:7px;margin-top:8px;animation:fadeUp 0.3s ease 0.4s both"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>';
+    document.body.appendChild(postSplash);
   }
-  try { loadHistory(); } catch(e) {}
-  try { updateStats(); } catch(e) {}
-  try { initKeys(); } catch(e) {}
+  postSplash.style.opacity = '1';
+  postSplash.style.display = 'flex';
+
+  setTimeout(function() {
+    var m = document.getElementById('mainApp');
+    if (m) m.style.display = 'block';
+    updateAccountInfo();
+    if (!appShown) {
+      appShown = true;
+      try { buildQTGrid(); } catch(e) {}
+      try { buildTemplates(); } catch(e) {}
+      try { loadPrefs(); } catch(e) {}
+      try { syncDiff(); } catch(e) {}
+    }
+    try { loadHistory(); } catch(e) {}
+    try { updateStats(); } catch(e) {}
+    try { initKeys(); } catch(e) {}
+
+    // Fade out post-login splash
+    postSplash.style.opacity = '0';
+    setTimeout(function() { postSplash.style.display = 'none'; }, 650);
+  }, 1800);
 }
 
 function updateAccountInfo() {
@@ -802,6 +780,9 @@ window.addEventListener('beforeinstallprompt', function(e) {
     var banner = document.getElementById('installBanner');
     if (banner) banner.classList.add('on');
   }
+  // Show install button in settings too
+  var settingsBtn = document.getElementById('settingsInstallBtn');
+  if (settingsBtn) settingsBtn.style.display = 'inline-flex';
   var btn1 = document.getElementById('installBannerBtn');
   var btn2 = document.getElementById('authInstallBtn');
   if (btn1) btn1.onclick = triggerInstall;
@@ -825,15 +806,8 @@ function dismissInstall() {
 
 // ── Service Worker ──
 if ('serviceWorker' in navigator) {
-  // Force update the service worker immediately on every load
-  // This ensures users always get the latest version
-  navigator.serviceWorker.register('/sw.js').then(function(reg) {
-    reg.update(); // check for new SW version immediately
-  }).catch(function() {});
-
-  // If a new SW is waiting, activate it immediately
-  navigator.serviceWorker.addEventListener('controllerchange', function() {
-    // New SW took over — the page will work with fresh files now
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').catch(function() {});
   });
 }
 
@@ -1166,6 +1140,7 @@ function syncDiff() {
   document.getElementById('vHard').textContent = h + '%';
   var t = e + m + h;
   document.getElementById('diffTotal').textContent = t;
+  // Show info message if not 100%, but never block generation
   document.getElementById('diffWarn').classList.toggle('hidden', t === 100);
 }
 
@@ -1182,7 +1157,7 @@ function processFiles(files) {
   files.forEach(function(f) {
     var reader = new FileReader();
     var ext = f.name.split('.').pop().toLowerCase();
-    
+
     // Add chip immediately
     var row = document.getElementById('chipRow');
     var chip = document.createElement('div');
@@ -1191,27 +1166,38 @@ function processFiles(files) {
     chip.innerHTML = '📄 ' + f.name + ' <span class="chip-x" onclick="removeFile(\'' + f.name + '\', this)">✕</span>';
     row.appendChild(chip);
 
+    // Save file to Supabase Storage
+    if (supa && currentUser) {
+      var filePath = currentUser.id + '/' + Date.now() + '_' + f.name;
+      supa.storage.from('uploads').upload(filePath, f, { upsert: true })
+        .then(function(res) {
+          if (!res.error && currentUser) {
+            return supa.from('user_files').insert({
+              user_id: currentUser.id,
+              file_name: f.name,
+              file_path: filePath,
+              file_size: f.size
+            });
+          }
+        }).catch(function() {});
+    }
+
     if (['txt','md','csv','json','html','xml','js','py','java','cpp','c','ts','jsx','tsx','css'].indexOf(ext) >= 0) {
-      // Text files — read as text
       reader.onload = function(ev) { uploadedText += '\n\n---FILE: ' + f.name + '---\n' + ev.target.result; };
       reader.readAsText(f);
     } else if (ext === 'pdf') {
-      // PDF — read as text (best effort) or notify user
       reader.onload = function(ev) {
-        // Try to extract readable text from PDF bytes
         var text = ev.target.result;
-        // Extract any readable ASCII from the binary
         var readable = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
         if (readable.length > 100) {
           uploadedText += '\n\n---FILE: ' + f.name + '---\n' + readable.substring(0, 50000);
         } else {
-          uploadedText += '\n\n---FILE: ' + f.name + ' (PDF - extract text manually below)---\n';
-          showToast('PDF: paste text in the box below for best results', 'info');
+          uploadedText += '\n\n---FILE: ' + f.name + ' (PDF - paste text below for best results)---\n';
+          showToast('PDF uploaded & saved. For best results, paste the text content below too.', 'info');
         }
       };
       reader.readAsBinaryString(f);
     } else {
-      // Other files (DOCX, images etc.) — read as text (best effort)
       reader.onload = function(ev) {
         var text = typeof ev.target.result === 'string' ? ev.target.result : '';
         var readable = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -1220,7 +1206,6 @@ function processFiles(files) {
       reader.readAsBinaryString(f);
     }
   });
-  // Reset input so same file can be uploaded again
   document.getElementById('fileInput').value = '';
 }
 function removeFile(name, el) {
@@ -1285,12 +1270,13 @@ function buildPrompt(p) {
     '\n\nSPECIAL INSTRUCTIONS:\n' + (p.instructions || 'None') +
     (extras.length ? '\n\nADDITIONAL:\n' + extras.map(function(e) { return '- ' + e; }).join('\n') : '') +
     '\n\n═════════════════════════════════\nMANDATORY FORMATTING RULES\n═════════════════════════════════\n' +
-    '1. Paper header block at top\n2. GENERAL INSTRUCTIONS section — 5–6 realistic exam instructions\n' +
-    '3. Each section labeled (Section A, B, C…) with type, marks per Q, section total\n' +
-    '4. Questions numbered Q1, Q2, Q3…\n5. MCQ: options (a)(b)(c)(d) each on own line\n' +
-    '6. [X marks] at end of each question\n7. Divider lines between sections\n' +
-    '8. Every question genuine, unambiguous, educationally valid\n' +
-    (p.answerKey ? '9. After all questions add:\n    ══════════ ANSWER KEY ══════════\n    List all answers clearly' : '9. Do NOT include any answers') +
+    '1. CENTERED PAPER HEADER: Institution / School name on top, then exam name, subject + code, date, time allowed, max marks — styled like official board paper\n' +
+    '2. GENERAL INSTRUCTIONS box: 5-6 numbered realistic exam instructions (compulsory questions, roll number, use of calculators etc.)\n' +
+    '3. Sections clearly labeled SECTION A, SECTION B etc with question type and per-question marks stated\n' +
+    '4. Questions numbered Q1, Q2... sub-parts as (a)(b)(c)\n5. MCQ options each on own line: (a) ... (b) ... (c) ... (d) ...\n' +
+    '6. Marks shown as [1 Mark] or [2 Marks] at end of each question\n7. Decorative dividers ────────────── between sections\n' +
+    '8. Footer: *** END OF QUESTION PAPER ***\n9. All questions must be genuine, curriculum-appropriate, and educationally valid\n10. Use the exact official paper format for the specified education level and exam type\n' +
+    (p.answerKey ? '11. After all questions, add: ════════════════ [ANSWER KEY — SEPARATE PAGE] ════════════════ then list all answers clearly. Answer key MUST be completely separate from question paper.\n' : '11. Do NOT include any answers.\n') +
     '\n\nGenerate the full, complete, untruncated question paper now:';
 }
 
@@ -1306,17 +1292,12 @@ function saveKey(provider) {
   showToast(provider === 'gemini' ? 'Gemini key saved ✓' : 'Groq key saved ✓', 'ok');
 }
 function initKeys() {
-  var gEl = document.getElementById('keyGemini');
-  var grEl = document.getElementById('keyGroq');
-  if (gEl) gEl.placeholder = getKey('gemini') ? '●●●●●● (saved)' : 'AIzaSy…';
-  if (grEl) grEl.placeholder = getKey('groq') ? '●●●●●● (saved)' : 'gsk_…';
+  // API key inputs removed from UI — keys handled server-side
+  // This function kept for backwards compatibility only
   updateDots();
 }
 function updateDots() {
-  var gEl = document.getElementById('gDot');
-  var grEl = document.getElementById('grDot');
-  if (gEl) gEl.className = 'sdot ' + (getKey('gemini') ? 'dot-ok' : 'dot-err');
-  if (grEl) grEl.className = 'sdot ' + (getKey('groq') ? 'dot-ok' : 'dot-warn');
+  // Dots removed from UI — no-op
 }
 
 // ── GENERATE ──
@@ -1325,10 +1306,8 @@ async function generate() {
   var p = collectP();
   if (!p.subject.trim()) { showToast('Please enter a subject name', 'err'); return; }
   if (p.qtypes.length === 0) { showToast('Select at least one question type', 'err'); return; }
-  var diff = +p.easy + +p.medium + +p.hard;
-  if (diff !== 100) { showToast('Difficulty must total 100% (currently ' + diff + '%)', 'err'); return; }
   if (p.mode === 'byoc' && !uploadedText && !v('pasteContent').trim()) { showToast('Please upload or paste your source content', 'err'); return; }
-  if (!getKey('gemini') && !getKey('groq')) { showToast('Add an API key in ⚙ Settings first', 'err'); showView('settings'); return; }
+  // No API key needed — using built-in serverless function
 
   document.getElementById('genBtn').disabled = true;
   document.getElementById('outWrap').classList.remove('on');
@@ -1343,25 +1322,32 @@ async function generate() {
   var result = '', model = '';
 
   try {
-    document.getElementById('aiTag').textContent = '● Gemini 1.5 Flash';
-    var aiRes = await callGemini(prompt);
+    // Try serverless function first (keys hidden server-side)
+    document.getElementById('aiTag').textContent = '● Smart Buddy AI';
+    var aiRes = await callAI(prompt);
     result = aiRes.result; model = aiRes.model;
   } catch(e) {
-    console.warn('Gemini failed:', e.message, '→ trying Groq…');
+    // Fallback to user's own keys if serverless fails
     try {
-      document.getElementById('aiTag').textContent = '● Groq LLaMA 3.3 70B';
-      var aiRes2 = await callGroq(prompt);
+      document.getElementById('aiTag').textContent = '● Gemini 1.5 Flash';
+      var aiRes2 = await callGemini(prompt);
       result = aiRes2.result; model = aiRes2.model;
     } catch(e2) {
-      clearInterval(tick);
-      document.getElementById('progressWrap').classList.remove('on');
-      document.getElementById('genBtn').disabled = false;
-      var msg = e2.message || 'Generation failed';
-      if (msg.includes('401') || msg.includes('API_KEY') || msg.includes('invalid')) msg = 'API key invalid — check ⚙ Settings.';
-      else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate')) msg = 'Rate limit reached. Wait 60 seconds.';
-      else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) msg = 'Network error — check your internet.';
-      showToast('❌ ' + msg, 'err');
-      return;
+      try {
+        document.getElementById('aiTag').textContent = '● Groq LLaMA 3.3 70B';
+        var aiRes3 = await callGroq(prompt);
+        result = aiRes3.result; model = aiRes3.model;
+      } catch(e3) {
+        clearInterval(tick);
+        document.getElementById('progressWrap').classList.remove('on');
+        document.getElementById('genBtn').disabled = false;
+        var msg = e3.message || 'Generation failed';
+        if (msg.includes('401') || msg.includes('API_KEY') || msg.includes('invalid')) msg = 'API key invalid. Please contact support.';
+        else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate') || msg.includes('TPM') || msg.includes('too large')) msg = 'Too many requests — please wait 60 seconds and try again.';
+        else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) msg = 'Network error — check your internet connection.';
+        showToast('❌ ' + msg, 'err');
+        return;
+      }
     }
   }
 
@@ -1385,6 +1371,23 @@ async function generate() {
   incStat('papers');
 }
 
+// ── SERVERLESS API CALL (keys hidden server-side) ──
+async function callAI(prompt) {
+  var res = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: prompt })
+  });
+  if (!res.ok) {
+    var err = await res.json().catch(function() { return {}; });
+    throw new Error(err.error || 'Generation failed (HTTP ' + res.status + ')');
+  }
+  var data = await res.json();
+  if (!data.result) throw new Error('Empty response from AI');
+  return { result: data.result, model: data.model || 'Smart Buddy AI' };
+}
+
+// Keep these as fallbacks if serverless not set up yet
 async function callGemini(prompt) {
   var key = getKey('gemini');
   if (!key) throw new Error('No Gemini key');
@@ -1556,9 +1559,9 @@ function updateStats() {
 }
 
 // ── PREFS ──
-function getPrefs() { try { return JSON.parse(localStorage.getItem('questrix_prefs') || '{"autosave":true,"badge":true}'); } catch(e) { return {autosave:true, badge:true}; } }
-function savePref() { localStorage.setItem('questrix_prefs', JSON.stringify({autosave: chk('pAutosave'), badge: chk('pBadge')})); }
-function loadPrefs() { var p = getPrefs(); var a = document.getElementById('pAutosave'); var b = document.getElementById('pBadge'); if (a) a.checked = p.autosave; if (b) b.checked = p.badge; }
+function getPrefs() { try { return JSON.parse(localStorage.getItem('questrix_prefs') || '{"autosave":true,"badge":true,"answerKey":true}'); } catch(e) { return {autosave:true, badge:true, answerKey:true}; } }
+function savePref() { localStorage.setItem('questrix_prefs', JSON.stringify({autosave: chk('pAutosave'), badge: chk('pBadge'), answerKey: chk('pAnswerKey')})); }
+function loadPrefs() { var p = getPrefs(); var a = document.getElementById('pAutosave'); var b = document.getElementById('pBadge'); var k = document.getElementById('pAnswerKey'); var ak = document.getElementById('answerKey'); if (a) a.checked = p.autosave !== false; if (b) b.checked = p.badge !== false; if (k) k.checked = p.answerKey !== false; if (ak) ak.checked = p.answerKey !== false; }
 
 // ── DATA EXPORT/IMPORT ──
 function exportData() {
