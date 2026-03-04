@@ -1439,15 +1439,15 @@ function filterTemplates() {
 }
 function loadTemplate(idx) {
   var t = TEMPLATES[idx];
-  if (!t || !t.params) { showToast('Template not found', 'err'); return; }
+  if (!t) { showToast('Template not found', 'err'); return; }
+  // Templates store their data in t.p OR t.params — support both
+  var params = t.p || t.params;
+  if (!params) { showToast('Template data missing', 'err'); return; }
+  // Switch to Generate view first, then fill fields after view transition
   showView('gen');
-  // Small delay to let view switch before filling fields
   setTimeout(function() {
-    loadParams(t.params);
-    showToast('✅ Template loaded — review and click Generate!', 'ok');
-    // Scroll to top of the gen view
-    try { window.scrollTo({top: 0, behavior: 'smooth'}); } catch(e) {}
-  }, 120);
+    loadParams(params);
+  }, 150);
 }
 
 function loadParams(p) {
@@ -1827,15 +1827,15 @@ async function generate() {
     document.getElementById('progressWrap').classList.remove('on');
     document.getElementById('genBtn').disabled = false;
     var msg = e.message || 'Generation failed';
-    if (msg === '__CANCELLED__') return; // user started a new generation — no error shown
+    if (msg === '__CANCELLED__') return;
     if (msg.includes('not configured') || msg.includes('Contact support') || msg === 'NO_KEY') {
-      showToast('⚠️ API keys not set on Vercel. Go to Vercel → Settings → Environment Variables and add GEMINI_API_KEY + GROQ_API_KEY, then Redeploy.', 'err');
-    } else if (msg.includes('401') || msg.includes('invalid') || msg.toLowerCase().includes('api key')) {
-      showToast('❌ API key error. Please contact support or check Vercel environment variables.', 'err');
-    } else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate limit')) {
-      showToast('⏳ AI is overloaded — retrying automatically. If this continues, wait 1 minute and try again.', 'err');
+      showToast('⚠️ API keys not set on Vercel. Add GEMINI_API_KEY + GROQ_API_KEY in Vercel → Settings → Environment Variables, then Redeploy.', 'err');
+    } else if (msg.includes('401') || msg.includes('403') || msg.toLowerCase().includes('api key')) {
+      showToast('❌ API key error — check your Vercel environment variables.', 'err');
+    } else if (msg.includes('429') || msg.includes('quota') || msg.includes('rate')) {
+      showToast('⏳ AI quota exceeded — please wait 1 minute and try again.', 'err');
     } else if (msg.includes('Network error') || msg.includes('internet')) {
-      showToast('❌ No internet connection — please check your network and try again.', 'err');
+      showToast('❌ No internet — check your connection and try again.', 'err');
     } else if (msg.includes('500') || msg.includes('Server error')) {
       showToast('⚠️ Server issue — please try again in a few seconds.', 'err');
     } else {
@@ -1972,16 +1972,18 @@ async function callAI(prompt) {
     try { _activeController.abort(); } catch(x) {}
   }
 
-  var safePrompt = prompt.length > 45000 ? prompt.substring(0, 45000) + '\n\n[Source content trimmed. Generate complete paper from above specs.]' : prompt;
+  var safePrompt = prompt.length > 45000
+    ? prompt.substring(0, 45000) + '\n\n[Source content trimmed. Generate complete paper from above specs.]'
+    : prompt;
 
   async function attempt(attemptNum) {
     var ctrl = new AbortController();
     _activeController = ctrl;
 
-    // Update progress message on retry
+    // Show retry message on 2nd+ attempt
     if (attemptNum > 1) {
       var stepEl = document.getElementById('progStep');
-      if (stepEl) stepEl.textContent = 'Retrying with backup AI model…';
+      if (stepEl) stepEl.textContent = 'Retrying with backup AI model… (' + attemptNum + '/3)';
     }
 
     var res;
@@ -1994,7 +1996,7 @@ async function callAI(prompt) {
       });
     } catch(fetchErr) {
       if (fetchErr.name === 'AbortError') throw new Error('__CANCELLED__');
-      throw new Error('Network error — check your internet connection and try again.');
+      throw new Error('Network error — check your internet connection.');
     }
 
     if (!res.ok) {
@@ -2006,26 +2008,28 @@ async function callAI(prompt) {
     }
 
     var data;
-    try { data = await res.json(); } catch(x) { throw new Error('Invalid response from server. Please try again.'); }
-    if (!data.result || !data.result.trim()) throw new Error('Empty response from AI. Please try again.');
+    try { data = await res.json(); } catch(x) {
+      throw new Error('Invalid server response — please try again.');
+    }
+    if (!data.result || !data.result.trim()) throw new Error('AI returned empty output — please try again.');
     return { result: data.result, model: data.model || 'Questrix AI' };
   }
 
-  // Try up to 3 times automatically before giving up
+  // Auto-retry up to 3 times before giving up
   var lastErr;
   for (var i = 1; i <= 3; i++) {
     try {
       return await attempt(i);
     } catch(e) {
-      if (e.name === 'AbortError' || e.message === '__CANCELLED__') throw new Error('__CANCELLED__');
+      if (e.message === '__CANCELLED__' || e.name === 'AbortError') throw new Error('__CANCELLED__');
       lastErr = e;
-      // Don't retry on cancellation or auth errors
+      // Don't retry on config/auth errors — retrying won't help
       if (e.message && (e.message.includes('configured') || e.message.includes('401') || e.message.includes('403'))) break;
-      // Wait briefly before retry (500ms, then 1s)
+      // Wait before retrying (500ms then 1000ms)
       if (i < 3) await new Promise(function(r) { setTimeout(r, i * 500); });
     }
   }
-  throw lastErr || new Error('Generation failed. Please try again.');
+  throw lastErr || new Error('Generation failed — please try again.');
 }
 
 // Legacy stubs — kept so nothing breaks if called elsewhere
